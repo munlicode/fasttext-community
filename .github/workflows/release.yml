@@ -57,6 +57,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Clean previous builds
+        run: rm -rf dist build *.egg-info
+
       # Download all built artifacts (Linux, macOS)
       - uses: actions/download-artifact@v4
         with:
