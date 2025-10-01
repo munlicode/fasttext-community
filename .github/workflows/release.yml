@@ -71,6 +71,12 @@ jobs:
           name: dist-macos-latest
           path: dist
 
+      # Install Twine
+      - name: Install Twine
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine
+
       - name: Verify distributions
         run: twine check dist/*
 
