@@ -209,4 +209,8 @@ setup(
     ],
     package_dir={str(""): str("python/fasttext_module")},
     zip_safe=False,
+    extras_require={
+        "test": ["pytest"],
+        "dev": ["pytest", "build", "twine"],
+    },
 )
