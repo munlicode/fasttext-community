@@ -41,10 +41,11 @@ jobs:
           CIBW_SKIP: "cp38-musllinux* cp39-musllinux* cp310-musllinux* cp311-musllinux* cp312-musllinux* cp313-musllinux* cp314-musllinux* cp314t-musllinux*"
           # TODO: Add Windows skips if needed once Windows build issue is fixed
 
-          # TODO: Temporary workaround: musllinux builds and Windows builds are skipped,
-          # and warnings-as-errors are disabled using CXXFLAGS='-Wno-error'.
-          # See Issue #3 to track fixing signed/unsigned mismatches and enabling full builds.
+          # TODO: Temporarily disable treating warnings as errors to allow CI to pass.
+          # See Issue #<ISSUE_NUMBER> for the discussion on properly fixing signed/unsigned loops in fasttext_pybind.cc
           CIBW_ENVIRONMENT: "CXXFLAGS='-Wno-error'"
+
+          MACOSX_DEPLOYMENT_TARGET: "15.6"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
