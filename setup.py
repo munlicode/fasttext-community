@@ -21,7 +21,7 @@ import subprocess
 import platform
 import io
 
-__version__ = "0.9.2"
+__version__ = "0.10.4"
 FASTTEXT_SRC = "src"
 
 # Based on https://github.com/pybind/python_example
@@ -80,9 +80,11 @@ ext_modules = [
         ],
         language="c++",
         extra_compile_args=[
-            "-O0 -fno-inline -fprofile-arcs -pthread -march=native"
-            if coverage
-            else "-O3 -funroll-loops -pthread -march=native"
+            (
+                "-O0 -fno-inline -fprofile-arcs -pthread -march=native"
+                if coverage
+                else "-O3 -funroll-loops -pthread -march=native"
+            )
         ],
     ),
 ]
@@ -169,24 +171,28 @@ def _get_readme():
 
 
 setup(
-    name="fasttext",
+    name="fasttext-community",
     version=__version__,
-    author="Onur Celebi",
-    author_email="celebio@fb.com",
+    author="Nurzhan Muratkhan",
+    author_email="nurzhanmuratkhan@gmail.com",
     description="fasttext Python bindings",
     long_description=_get_readme(),
     ext_modules=ext_modules,
-    url="https://github.com/facebookresearch/fastText",
+    url="https://github.com/munlicode/fastText",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Software Development",
         "Topic :: Scientific/Engineering",
         "Operating System :: Microsoft :: Windows",
