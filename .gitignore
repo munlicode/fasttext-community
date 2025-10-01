@@ -33,3 +33,6 @@ __pycache__/
 
 # macOS system files
 .DS_Store
+
+# Build Artifacts
+wheelhouse/

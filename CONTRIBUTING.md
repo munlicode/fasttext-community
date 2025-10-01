@@ -50,3 +50,18 @@ Complete your CLA here: <https://code.facebook.com/cla>
 
 ## License
 By contributing to fastText, you agree that your contributions will be licensed under its MIT license.
+
+
+---
+
+## Building Wheels (temporary)
+
+⚙️ We use [cibuildwheel](https://cibuildwheel.readthedocs.io/) to build
+cross-platform wheels (Linux, macOS, Windows).  
+For now this step is manual, but the plan is to move it into our CI/CD
+pipeline (GitHub Actions).
+
+### Prerequisites
+Install cibuildwheel:
+```bash
+pip install cibuildwheel

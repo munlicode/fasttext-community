@@ -1,0 +1,85 @@
+name: Build and Publish
+
+on:
+  push:
+    tags:
+      - "v*"   # e.g. v0.1.0 → triggers release build
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build cibuildwheel twine
+
+      # Build sdist only once (on Linux)
+      - name: Build sdist
+        if: matrix.os == 'ubuntu-latest'
+        run: python -m build --sdist --outdir dist
+
+      # Build wheels for current OS
+      - name: Build wheels with cibuildwheel
+        run: cibuildwheel --output-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: dist/*
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # Download all built artifacts (Linux, Windows, macOS)
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-ubuntu-latest
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-windows-latest
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist-macos-latest
+          path: dist
+
+      - name: Verify distributions
+        run: twine check dist/*
+
+      - name: Publish to TestPyPI
+        if: github.ref_type == 'tag'  # only run on tag
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: twine upload --repository testpypi dist/*
+
+      - name: Publish to PyPI
+        if: github.ref_type == 'tag'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
