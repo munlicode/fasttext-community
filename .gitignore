@@ -3,9 +3,8 @@
 *.bin
 *.vec
 *.bc
-.DS_Store
 data
-fasttext
+/fasttext
 result
 website/node_modules/
 package-lock.json
@@ -15,3 +14,22 @@ node_modules/
 venv/
 .venv/
 env/
+
+# Python build artifacts
+/build/
+/dist/
+*.egg-info/
+*.so
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# General cache directories
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# macOS system files
+.DS_Store
