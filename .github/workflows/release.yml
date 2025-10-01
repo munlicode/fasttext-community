@@ -35,6 +35,9 @@ jobs:
       # Build wheels for current OS
       - name: Build wheels with cibuildwheel
         run: cibuildwheel --output-dir dist
+        env:  
+          # TODO: Re-enable musllinux builds once fixed (see issue #<ISSUE_NUMBER>)
+          CIBW_SKIP: "cp38-musllinux* cp39-musllinux* cp310-musllinux* cp311-musllinux* cp312-musllinux* cp313-musllinux* cp314-musllinux*"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
