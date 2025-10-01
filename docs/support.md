@@ -26,7 +26,7 @@ For the word-similarity evaluation script you will need:
 In order to build `fastText`, use the following:
 
 ```bash
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ make
 ```
@@ -40,7 +40,7 @@ If you do not plan on using the default system-wide compiler, update the two mac
 In order to build `fasttext` module for python, use the following:
 
 ```bash
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ sudo pip install .
 $ # or :

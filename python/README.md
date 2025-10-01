@@ -6,17 +6,22 @@ In this document we present how to use fastText in python.
 
 ## Table of contents
 
-* [Requirements](#requirements)
-* [Installation](#installation)
-* [Usage overview](#usage-overview)
-   * [Word representation model](#word-representation-model)
-   * [Text classification model](#text-classification-model)
-   * [IMPORTANT: Preprocessing data / encoding conventions](#important-preprocessing-data-encoding-conventions)
-   * [More examples](#more-examples)
-* [API](#api)
-   * [`train_unsupervised` parameters](#train_unsupervised-parameters)
-   * [`train_supervised` parameters](#train_supervised-parameters)
-   * [`model` object](#model-object)
+- [fastText ](#fasttext-)
+  - [Table of contents](#table-of-contents)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage overview](#usage-overview)
+  - [Word representation model](#word-representation-model)
+    - [Saving and loading a model object](#saving-and-loading-a-model-object)
+  - [Text classification model](#text-classification-model)
+    - [Compress model files with quantization](#compress-model-files-with-quantization)
+  - [IMPORTANT: Preprocessing data / encoding conventions](#important-preprocessing-data--encoding-conventions)
+  - [More examples](#more-examples)
+- [API](#api)
+  - [`train_unsupervised` parameters](#train_unsupervised-parameters)
+  - [`train_supervised` parameters](#train_supervised-parameters)
+  - [`model` object](#model-object)
+  - [Join the fastText community](#join-the-fasttext-community)
 
 
 # Requirements
@@ -29,12 +34,12 @@ Since it uses C\++11 features, it requires a compiler with good C++11 support. Y
 
 To install the latest release, you can do :
 ```bash
-$ pip install fasttext
+$ pip install fasttext-community
 ```
 
 or, to get the latest development version of fasttext, you can install from our github repository :
 ```bash
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ sudo pip install .
 $ # or :

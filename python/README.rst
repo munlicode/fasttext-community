@@ -39,14 +39,14 @@ To install the latest release, you can do :
 
 .. code:: bash
 
-    $ pip install fasttext
+    $ pip install fasttext-community
 
 or, to get the latest development version of fasttext, you can install
 from our github repository :
 
 .. code:: bash
 
-    $ git clone https://github.com/facebookresearch/fastText.git
+    $ git clone https://github.com/munlicode/fastText.git
     $ cd fastText
     $ sudo pip install .
     $ # or :

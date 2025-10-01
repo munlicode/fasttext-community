@@ -30,12 +30,12 @@ Since it uses C\++11 features, it requires a compiler with good C++11 support. Y
 
 To install the latest release, you can do :
 ```bash
-$ pip install fasttext
+$ pip install fasttext-community
 ```
 
 or, to get the latest development version of fasttext, you can install from our github repository :
 ```bash
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ sudo pip install .
 $ # or :

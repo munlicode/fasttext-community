@@ -1,3 +1,9 @@
+> ##  Unofficial Community-Maintained Fork
+>
+> **This is a fork of the original [fastText](https://github.com/facebookresearch/fastText) repository, which was archived by Meta on March 19, 2024.**
+>
+> The purpose of this fork is to provide ongoing maintenance, bug fixes, and compatibility updates for the community. It is not affiliated with Meta or the original authors.
+
 # fastText
 [fastText](https://fasttext.cc/) is a library for efficient learning of word representations and sentence classification.
 
@@ -5,28 +11,30 @@
 
 ## Table of contents
 
-* [Resources](#resources)
-   * [Models](#models)
-   * [Supplementary data](#supplementary-data)
-   * [FAQ](#faq)
-   * [Cheatsheet](#cheatsheet)
-* [Requirements](#requirements)
-* [Building fastText](#building-fasttext)
-   * [Getting the source code](#getting-the-source-code)
-   * [Building fastText using make (preferred)](#building-fasttext-using-make-preferred)
-   * [Building fastText using cmake](#building-fasttext-using-cmake)
-   * [Building fastText for Python](#building-fasttext-for-python)
-* [Example use cases](#example-use-cases)
-   * [Word representation learning](#word-representation-learning)
-   * [Obtaining word vectors for out-of-vocabulary words](#obtaining-word-vectors-for-out-of-vocabulary-words)
-   * [Text classification](#text-classification)
-* [Full documentation](#full-documentation)
-* [References](#references)
-   * [Enriching Word Vectors with Subword Information](#enriching-word-vectors-with-subword-information)
-   * [Bag of Tricks for Efficient Text Classification](#bag-of-tricks-for-efficient-text-classification)
-   * [FastText.zip: Compressing text classification models](#fasttextzip-compressing-text-classification-models)
-* [Join the fastText community](#join-the-fasttext-community)
-* [License](#license)
+- [fastText](#fasttext)
+  - [Table of contents](#table-of-contents)
+  - [Resources](#resources)
+    - [Models](#models)
+    - [Supplementary data](#supplementary-data)
+    - [FAQ](#faq)
+    - [Cheatsheet](#cheatsheet)
+  - [Requirements](#requirements)
+  - [Building fastText](#building-fasttext)
+    - [Getting the source code](#getting-the-source-code)
+    - [Building fastText using make (preferred)](#building-fasttext-using-make-preferred)
+    - [Building fastText using cmake](#building-fasttext-using-cmake)
+    - [Building fastText for Python](#building-fasttext-for-python)
+  - [Example use cases](#example-use-cases)
+    - [Word representation learning](#word-representation-learning)
+    - [Obtaining word vectors for out-of-vocabulary words](#obtaining-word-vectors-for-out-of-vocabulary-words)
+    - [Text classification](#text-classification)
+  - [Full documentation](#full-documentation)
+  - [References](#references)
+    - [Enriching Word Vectors with Subword Information](#enriching-word-vectors-with-subword-information)
+    - [Bag of Tricks for Efficient Text Classification](#bag-of-tricks-for-efficient-text-classification)
+    - [FastText.zip: Compressing text classification models](#fasttextzip-compressing-text-classification-models)
+  - [Join the fastText community](#join-the-fasttext-community)
+  - [License](#license)
 
 ## Resources
 
@@ -103,7 +111,7 @@ If you do not plan on using the default system-wide compiler, update the two mac
 For now this is not part of a release, so you will need to clone the master branch.
 
 ```
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ mkdir build && cd build && cmake ..
 $ make && make install
@@ -116,7 +124,7 @@ This will create the fasttext binary and also all relevant libraries (shared, st
 For now this is not part of a release, so you will need to clone the master branch.
 
 ```
-$ git clone https://github.com/facebookresearch/fastText.git
+$ git clone https://github.com/munlicode/fastText.git
 $ cd fastText
 $ pip install .
 ```
