@@ -20,7 +20,27 @@ To create a pull request:
 6. If you haven't already, complete the Contributor License Agreement ("CLA").
 
 ## Tests
-First, you will need to make sure you have the required data. For that, please have a look at the fetch_test_data.sh script under tests. Next run the tests using the runtests.py script passing a path to the directory containing the datasets.
+First, you will need to make sure you have the required data. For that, please have a look at the fetch_test_data.sh script under tests. Next run the tests using `pytest`
+
+## Install Dependencies
+
+We recommend creating a virtual environment first:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On macOS/Linux
+venv\Scripts\activate     # On Windows
+```
+
+**Install the library with test dependencies**
+```bash
+pip install .[test]
+```
+
+**Install the library and all development dependencies**
+```bash
+pip install .[dev]
+```
 
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need

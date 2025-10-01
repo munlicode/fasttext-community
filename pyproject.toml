@@ -1,2 +1,12 @@
 [build-system]
 requires = ["setuptools", "wheel", "pybind11"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+dev = [
+    "pytest",
+    "build",
+    "twine",
+]
