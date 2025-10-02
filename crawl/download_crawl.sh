@@ -18,7 +18,7 @@ NUM_DEDUP=8
 URL="https://commoncrawl.s3.amazonaws.com/"
 
 if [ ! -d fastText ]; then
-    git clone https://github.com/munlicode/fastText.git
+    git clone https://github.com/munlicode/fasttext-community.git
 fi
 
 if [ ! -f fastText/fasttext ]; then

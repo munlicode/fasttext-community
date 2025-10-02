@@ -35,7 +35,7 @@ $ pip install fasttext-community
 
 or, to get the latest development version of fasttext, you can install from our github repository :
 ```bash
-$ git clone https://github.com/munlicode/fastText.git
+$ git clone https://github.com/munlicode/fasttext-community.git
 $ cd fastText
 $ sudo pip install .
 $ # or :

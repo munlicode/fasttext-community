@@ -46,7 +46,7 @@ from our github repository :
 
 .. code:: bash
 
-    $ git clone https://github.com/munlicode/fastText.git
+    $ git clone https://github.com/munlicode/fasttext-community.git
     $ cd fastText
     $ sudo pip install .
     $ # or :

@@ -111,7 +111,7 @@ If you do not plan on using the default system-wide compiler, update the two mac
 For now this is not part of a release, so you will need to clone the master branch.
 
 ```
-$ git clone https://github.com/munlicode/fastText.git
+$ git clone https://github.com/munlicode/fasttext-community.git
 $ cd fastText
 $ mkdir build && cd build && cmake ..
 $ make && make install
@@ -124,7 +124,7 @@ This will create the fasttext binary and also all relevant libraries (shared, st
 For now this is not part of a release, so you will need to clone the master branch.
 
 ```
-$ git clone https://github.com/munlicode/fastText.git
+$ git clone https://github.com/munlicode/fasttext-community.git
 $ cd fastText
 $ pip install .
 ```

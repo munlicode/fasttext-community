@@ -19,9 +19,7 @@ import setuptools
 import os
 import subprocess
 import platform
-import io
 
-__version__ = "0.10.7"
 FASTTEXT_SRC = "src"
 
 # Based on https://github.com/pybind/python_example
@@ -161,56 +159,11 @@ class BuildExt(build_ext):
         build_ext.build_extensions(self)
 
 
-def _get_readme():
-    """
-    Use pandoc to generate rst from md.
-    pandoc --from=markdown --to=rst --output=python/README.rst python/README.md
-    """
-    with io.open("python/README.rst", encoding="utf-8") as fid:
-        return fid.read()
-
-
 setup(
-    name="fasttext-community",
-    version=__version__,
-    author="Nurzhan Muratkhan",
-    author_email="nurzhanmuratkhan@gmail.com",
-    description="fasttext Python bindings",
-    long_description=_get_readme(),
     ext_modules=ext_modules,
-    url="https://github.com/munlicode/fastText",
-    license="MIT",
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Software Development",
-        "Topic :: Scientific/Engineering",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX",
-        "Operating System :: Unix",
-        "Operating System :: MacOS",
-    ],
-    install_requires=["pybind11>=2.2", "setuptools >= 0.7.0", "numpy"],
     cmdclass={"build_ext": BuildExt},
-    packages=[
-        str("fasttext"),
-        str("fasttext.util"),
-        str("fasttext.tests"),
-    ],
-    package_dir={str(""): str("python/fasttext_module")},
-    zip_safe=False,
-    extras_require={
-        "test": ["pytest"],
-        "dev": ["pytest", "build", "twine"],
-    },
+    # extras_require={
+    #     "test": ["pytest"],
+    #     "dev": ["pytest", "build", "twine"],
+    # },
 )
