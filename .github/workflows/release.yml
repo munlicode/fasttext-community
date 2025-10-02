@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest] # FIXME: os: [ubuntu-latest, macos-latest]
         python: [3.12]  # add more versions like 3.10, 3.11 if needed
         # windows-latest  # TODO: temporarily disabled (see Issue #1)
 
@@ -69,10 +69,10 @@ jobs:
         # with: # TODO: Uncomment once Windows builds are fixed (see Issue #1)
         #   name: dist-windows-latest
         #   path: dist
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist-macos-latest
-          path: dist
+      # - uses: actions/download-artifact@v4 # FIXME: 
+      #   with:
+      #     name: dist-macos-latest
+      #     path: dist
 
       # Install Twine
       - name: Install Twine
