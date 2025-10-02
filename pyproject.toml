@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fasttext-community"
-version = "0.10.7"
+version = "0.10.8"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
 requires-python = ">=3.9"

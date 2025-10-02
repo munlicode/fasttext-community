@@ -116,11 +116,14 @@ jobs:
       contents: write
       
     steps:
-      # Download the artifacts again for this job
-      - uses: actions/download-artifact@v4
+      # Download the artifacts from each build job, just like in the 'publish' job.
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: python-package-distributions
           path: dist
+          pattern: dist-* # This pattern will download all artifacts starting with 'dist-'
+          merge-multiple: true # This merges them all into one 'dist' directory
+
           
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
