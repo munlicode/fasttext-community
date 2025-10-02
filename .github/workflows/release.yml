@@ -42,7 +42,7 @@ jobs:
           # TODO: Add Windows skips if needed once Windows build issue is fixed
 
           # TODO: Temporarily disable treating warnings as errors to allow CI to pass.
-          # See Issue #<ISSUE_NUMBER> for the discussion on properly fixing signed/unsigned loops in fasttext_pybind.cc
+          # See Issue #3 for the discussion on properly fixing signed/unsigned loops in fasttext_pybind.cc
           CIBW_ENVIRONMENT: "CXXFLAGS='-Wno-error'"
 
           MACOSX_DEPLOYMENT_TARGET: "15.6"
