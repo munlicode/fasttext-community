@@ -8,8 +8,9 @@ name = "fasttext-community"
 version = "0.10.7"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.6"
-license = { text = "MIT" }
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" }
 ]
@@ -20,14 +21,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
 ]
@@ -38,6 +31,3 @@ dev = ["pytest", "build", "twine"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
-
-[tool.setuptools]
-license-files = ["LICENSE"]
