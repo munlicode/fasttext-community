@@ -162,8 +162,4 @@ class BuildExt(build_ext):
 setup(
     ext_modules=ext_modules,
     cmdclass={"build_ext": BuildExt},
-    # extras_require={
-    #     "test": ["pytest"],
-    #     "dev": ["pytest", "build", "twine"],
-    # },
 )
