@@ -37,6 +37,9 @@ jobs:
       - name: Build wheels with cibuildwheel
         run: cibuildwheel --output-dir dist
         env:  
+          # Force a modern setuptools in all build environments
+          CIBW_BEFORE_BUILD: "pip install --upgrade setuptools wheel"
+
           # TODO: Re-enable musllinux builds once fixed (see Issue #2)
           CIBW_SKIP: "cp38-musllinux* cp39-musllinux* cp310-musllinux* cp311-musllinux* cp312-musllinux* cp313-musllinux* cp314-musllinux* cp314t-musllinux*"
           # TODO: Add Windows skips if needed once Windows build issue is fixed
