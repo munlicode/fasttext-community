@@ -11,8 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest] # FIXME: os: [ubuntu-latest, macos-latest]
-        python: [3.12]  # add more versions like 3.10, 3.11 if needed
+        os: [ubuntu-latest, macos-latest]
+        python: [3.12]
         # windows-latest  # TODO: temporarily disabled (see Issue #1)
 
     steps:
@@ -56,6 +56,8 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+    # This job only runs when a tag is pushed
+    if: github.ref_type == 'tag'
     steps:
       - name: Clean previous builds
         run: rm -rf dist build *.egg-info
@@ -69,10 +71,10 @@ jobs:
         # with: # TODO: Uncomment once Windows builds are fixed (see Issue #1)
         #   name: dist-windows-latest
         #   path: dist
-      # - uses: actions/download-artifact@v4 # FIXME: 
-      #   with:
-      #     name: dist-macos-latest
-      #     path: dist
+      - uses: actions/download-artifact@v4 # FIXME: 
+        with:
+          name: dist-macos-latest
+          path: dist
 
       # Install Twine
       - name: Install Twine
@@ -92,14 +94,12 @@ jobs:
         run: twine check dist/*
 
       - name: Publish to TestPyPI
-        if: github.ref_type == 'tag'  # only run on tag
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: twine upload --repository testpypi dist/*
 
       - name: Publish to PyPI
-        if: github.ref_type == 'tag'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
@@ -108,8 +108,23 @@ jobs:
   release:
     needs: publish
     runs-on: ubuntu-latest
+    # This job also only runs when a tag is pushed
+    if: github.ref_type == 'tag'
+    
+    # This grants the job permission to create a release
+    permissions:
+      contents: write
+      
     steps:
+      # Download the artifacts again for this job
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist
+          
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          # This tells the action to attach all files from the 'dist' directory
+          files: dist/*
           generate_release_notes: true
