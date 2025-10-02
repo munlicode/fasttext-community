@@ -4,6 +4,7 @@
 *.vec
 *.bc
 data
+tmp
 /fasttext
 result
 website/node_modules/

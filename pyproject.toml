@@ -9,7 +9,9 @@ version = "0.10.7"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
 requires-python = ">=3.6"
-license = "MIT"
+license = "MIT"  # SPDX string
+license-files = ["LICENSE"]
+
 authors = [
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" }
 ]
