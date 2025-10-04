@@ -17,19 +17,20 @@ jobs:
         
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@vV4
 
       - name: Install build tools
-        run: pip install cibuildwheel
+        run: pip install cibuildwheel twine
 
       - name: Build sdist and wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
-          # TODO: Add Windows skips if needed once Windows build issue is fixed
-          
           CIBW_TEST_COMMAND: "pip install {wheel} && pytest {project}"
           CIBW_TEST_REQUIRES: "pytest"
           MACOSX_DEPLOYMENT_TARGET: "15.6"
+
+      - name: Check package metadata
+        run: twine check wheelhouse/*
 
       - name: Store artifact for publishing
         uses: actions/upload-artifact@v4
@@ -39,15 +40,15 @@ jobs:
 
   publish_to_pypi:
     name: Publish to PyPI
-    needs: [build_packages] # This job waits for the build jobs to complete
+    needs: [build_packages]
     runs-on: ubuntu-latest
     steps:
       - name: Download all packages
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: wheelhouse
           pattern: python-packages-*
-          merge-multiple: true # Merges artifacts from all build jobs into one 'dist' directory
+          merge-multiple: true
 
       - name: Publish to PyPI
         env:
@@ -55,24 +56,25 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           pip install twine
-          twine upload "dist/*"
+          twine check "wheelhouse/*"
+          twine upload "wheelhouse/*"
 
   create_github_release:
     name: Create GitHub Release
-    needs: [publish_to_pypi] # This job waits for the PyPI publish to succeed
+    needs: [publish_to_pypi]
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required to create a release
+      contents: write
     steps:
       - name: Download all packages for release
         uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: wheelhouse
           pattern: python-packages-*
           merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "dist/*" # Attach all built packages to the release
-          generate_release_notes: true # Automatically create release notes
+          files: "wheelhouse/*"
+          generate_release_notes: true
