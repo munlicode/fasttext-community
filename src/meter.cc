@@ -86,13 +86,13 @@ void Meter::writeGeneralMetrics(std::ostream& out, int32_t k) const {
   out << "R@" << k << "\t" << metrics_.recall() << std::endl;
 }
 
-std::vector<std::pair<uint64_t, uint64_t>> Meter::getPositiveCounts(
+std::vector<std::pair<std::uint64_t, std::uint64_t>> Meter::getPositiveCounts(
     int32_t labelId) const {
-  std::vector<std::pair<uint64_t, uint64_t>> positiveCounts;
+  std::vector<std::pair<std::uint64_t, std::uint64_t>> positiveCounts;
 
   const auto& v = scoreVsTrue(labelId);
-  uint64_t truePositives = 0;
-  uint64_t falsePositives = 0;
+  std::uint64_t truePositives = 0;
+  std::uint64_t falsePositives = 0;
   double lastScore = falseNegativeScore - 1.0;
 
   for (auto it = v.rbegin(); it != v.rend(); ++it) {
@@ -165,7 +165,7 @@ std::vector<std::pair<double, double>> Meter::precisionRecallCurve(
     return precisionRecallCurve;
   }
 
-  uint64_t golds =
+  std::uint64_t golds =
       (labelId == kAllLabels) ? metrics_.gold : labelMetrics_.at(labelId).gold;
 
   auto fullRecall = std::lower_bound(

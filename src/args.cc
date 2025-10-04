@@ -118,7 +118,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
   } else if (command == "cbow") {
     model = model_name::cbow;
   }
-  for (int ai = 2; ai < args.size(); ai += 2) {
+  for (size_t ai = 2; ai < args.size(); ai += 2) {
     if (args[ai][0] != '-') {
       std::cerr << "Provided argument without a dash! Usage:" << std::endl;
       printHelp();
@@ -219,7 +219,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
         printHelp();
         exit(EXIT_FAILURE);
       }
-    } catch (std::out_of_range) {
+    } catch (const std::out_of_range& e) {
       std::cerr << args[ai] << " is missing an argument" << std::endl;
       printHelp();
       exit(EXIT_FAILURE);
@@ -466,13 +466,13 @@ int64_t Args::getAutotuneModelSize() const {
       {'g', 1000000000},
       {'G', 1000000000},
   };
-  uint64_t multiplier = 1;
+  std::uint64_t multiplier = 1;
   char lastCharacter = modelSize.back();
   if (units.count(lastCharacter)) {
     multiplier = units[lastCharacter];
     modelSize = modelSize.substr(0, modelSize.size() - 1);
   }
-  uint64_t size = 0;
+  std::uint64_t size = 0;
   size_t nonNumericCharacter = 0;
   bool parseError = false;
   try {

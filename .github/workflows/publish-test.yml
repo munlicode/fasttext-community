@@ -1,0 +1,43 @@
+name: Publish to TestPyPI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build tools
+        run: pip install cibuildwheel twine
+
+      - name: Build wheels with cibuildwheel
+        run: cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_TEST_COMMAND: "pip install {wheel} && pytest {project}"
+          CIBW_TEST_REQUIRES: "pytest"
+          MACOSX_DEPLOYMENT_TARGET: "15.6"
+
+      - name: Build sdist (source distribution)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pip install build
+          python -m build --sdist --outdir wheelhouse
+
+      - name: Upload to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: twine upload --repository testpypi wheelhouse/*
