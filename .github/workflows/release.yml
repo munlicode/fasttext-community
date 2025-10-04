@@ -28,6 +28,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install build cibuildwheel twine>=6.2.0
 
+      - name: Install project and test dependencies
+        run: |
+          # This command installs your project in editable mode
+          # along with the testing dependencies defined in pyproject.toml
+          # (e.g., under [project.optional-dependencies.test])
+          pip install -e .[test]
+
+      - name: Run tests with pytest
+        run: |
+          pytest
+
       # Build sdist only once (on Linux)
       - name: Build sdist
         if: matrix.os == 'ubuntu-latest'
