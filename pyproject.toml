@@ -8,7 +8,7 @@ name = "fasttext-community"
 version = "0.10.8.1"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.9, <3.13"
+requires-python = ">=3.9, <3.14"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [

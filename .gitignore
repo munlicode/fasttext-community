@@ -4,6 +4,7 @@
 *.vec
 *.bc
 *.vscode
+*.tox
 data
 tmp
 /fasttext
