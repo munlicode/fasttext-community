@@ -134,9 +134,14 @@ namespace fasttext
     if (ngrams.size() > 0)
     {
       vec.mul(1.0 / ngrams.size());
+
+      real norm = vec.norm();
+      if (norm > 0)
+      {
+        vec.mul(1.0 / norm);
+      }
     }
   }
-
   void FastText::getSubwordVector(Vector &vec, const std::string &subword) const
   {
     vec.zero();

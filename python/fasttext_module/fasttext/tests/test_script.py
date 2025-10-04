@@ -120,11 +120,10 @@ def test_supervised_util_test(kwargs):
     valid_data = data[third:]
 
     # 2. Use temporary files to hold the data
-    with tempfile.NamedTemporaryFile(
-        mode="w+", encoding="UTF-8"
-    ) as train_file, tempfile.NamedTemporaryFile(
-        mode="w+", encoding="UTF-8"
-    ) as valid_file:
+    with (
+        tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8") as train_file,
+        tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8") as valid_file,
+    ):
 
         for line in train_data:
             train_file.write(f"__label__{line.strip()}\n")
@@ -353,17 +352,27 @@ def test_oov_subword_vector_reconstruction(kwargs):
 
         # Proceed only if the OOV word has subwords to be represented
         if len(subinds) > 0:
-            # Method 1: Get the vector using the public API
+            # Method 1: Get the vector using the public API (already normalized)
             vec_api = model.get_word_vector(word)
 
-            # Method 2: Reconstruct the vector by manually averaging subword vectors
+            # Method 2: Manually average subword vectors
             sub_vectors = [model.get_input_vector(idx) for idx in subinds]
             vec_manual = np.mean(sub_vectors, axis=0)
+
+            # NORMALIZE the manually calculated vector
+            norm_manual = np.linalg.norm(vec_manual)
+            if norm_manual > 0:
+                vec_manual /= norm_manual
 
             # Method 3: Reconstruct directly from the input matrix
             vec_matrix = np.mean(input_matrix[subinds], axis=0)
 
-            # For OOV words, all methods should yield nearly identical vectors
+            # NORMALIZE the matrix-derived vector
+            norm_matrix = np.linalg.norm(vec_matrix)
+            if norm_matrix > 0:
+                vec_matrix /= norm_matrix
+
+            # Now, all methods should yield nearly identical, normalized vectors
             assert np.allclose(vec_api, vec_manual, atol=1e-5)
             assert np.allclose(vec_manual, vec_matrix, atol=1e-5)
 
