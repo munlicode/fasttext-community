@@ -3,6 +3,7 @@
 *.bin
 *.vec
 *.bc
+*.vscode
 data
 tmp
 /fasttext
