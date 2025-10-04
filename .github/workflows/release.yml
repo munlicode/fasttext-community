@@ -1,46 +1,80 @@
-name: Debug Release Build
+name: Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*' # This workflow only runs on tags like v0.11.0
 
 jobs:
-  debug_build_environment:
-    name: Debug Build Environment
-    runs-on: ubuntu-latest
+  build_packages:
+    name: Build Packages
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # windows-latest  # TODO: temporarily disabled (see Issue #1)
         
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Display pyproject.toml Content
-        run: |
-          echo "--- Contents of pyproject.toml ---"
-          cat pyproject.toml
-          echo "------------------------------------"
-
-      - name: List All Files in Repository
-        # ✅ This will show us if any other config files (like setup.cfg) exist
-        run: |
-          echo "--- Listing all files in the repository ---"
-          ls -laR
-          echo "-------------------------------------------"
-
       - name: Install build tools
-        run: pip install build twine
+        run: pip install cibuildwheel twine
 
-      - name: Build sdist (Source Distribution)
-        # We build only the sdist to inspect the metadata it generates
-        run: python -m build --sdist
+      - name: Build sdist and wheels
+        run: cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_TEST_COMMAND: "pip install {wheel} && pytest {project}"
+          CIBW_TEST_REQUIRES: "pytest"
+          MACOSX_DEPLOYMENT_TARGET: "15.6"
 
-      - name: Inspect sdist metadata (PKG-INFO)
-        # ✅ This is the most important step. It shows us the EXACT metadata
-        # that setuptools created, which is what PyPI is rejecting.
+      - name: Check package metadata
+        run: twine check wheelhouse/*
+
+      - name: Store artifact for publishing
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-packages-${{ matrix.os }}
+          path: wheelhouse/
+
+  publish_to_pypi:
+    name: Publish to PyPI
+    needs: [build_packages]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all packages
+        uses: actions/download-artifact@v4
+        with:
+          path: wheelhouse
+          pattern: python-packages-*
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          echo "--- Unpacking the sdist to inspect metadata ---"
-          tar -xvf dist/*.tar.gz
-          echo "--- Contents of the generated PKG-INFO file ---"
-          # The PKG-INFO file is inside the .egg-info directory of the unpacked sdist
-          cat fasttext_community-*/fasttext_community.egg-info/PKG-INFO
-          echo "-------------------------------------------------"
+          pip install twine
+          twine check "wheelhouse/*"
+          twine upload "wheelhouse/*"
+
+  create_github_release:
+    name: Create GitHub Release
+    needs: [publish_to_pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all packages for release
+        uses: actions/download-artifact@v4
+        with:
+          path: wheelhouse
+          pattern: python-packages-*
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "wheelhouse/*"
+          generate_release_notes: true
