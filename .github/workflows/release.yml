@@ -1,144 +1,77 @@
-name: Build and Publish
+name: Release
 
 on:
   push:
-    branches: [ main ]
     tags:
-      - "v*"   # NOTE: e.g. v0.1.0 → triggers release build
+      - 'v*.*.*' # This workflow only runs on tags like v0.11.0
 
 jobs:
-  build:
+  build_packages:
+    name: Build Packages
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python: [3.12]
         # windows-latest  # TODO: temporarily disabled (see Issue #1)
-
+        
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install build cibuildwheel twine>=6.2.0
-
-      - name: Install project and test dependencies
-        run: |
-          # This command installs your project in editable mode
-          # along with the testing dependencies defined in pyproject.toml
-          # (e.g., under [project.optional-dependencies.test])
-          pip install -e .[test]
-
-      - name: Run tests with pytest
-        run: |
-          pytest
-
-      # Build sdist only once (on Linux)
-      - name: Build sdist
-        if: matrix.os == 'ubuntu-latest'
-        run: python -m build --sdist --outdir dist
-
-      # Build wheels for current OS
-      - name: Build wheels with cibuildwheel
-        run: cibuildwheel --output-dir dist
+      - name: Build sdist and wheels
+        run: cibuildwheel --output-dir wheelhouse
         env:
           # TODO: Re-enable musllinux builds once fixed (see Issue #2)
-          CIBW_SKIP: "cp38-musllinux* cp39-musllinux* cp310-musllinux* cp311-musllinux* cp312-musllinux* cp313-musllinux* cp314-musllinux* cp314t-musllinux*"
+          # CIBW_SKIP: "cp38-musllinux* cp39-musllinux* cp310-musllinux* cp311-musllinux* cp312-musllinux* cp313-musllinux* cp314-musllinux* cp314t-musllinux*"
           # TODO: Add Windows skips if needed once Windows build issue is fixed
-
-          # TODO: Temporarily disable treating warnings as errors to allow CI to pass.
-          # See Issue #3 for the discussion on properly fixing signed/unsigned loops in fasttext_pybind.cc
-          CIBW_ENVIRONMENT: "CXXFLAGS='-Wno-error'"
-
+          
+          CIBW_TEST_COMMAND: "pip install {wheel} && pytest {project}"
+          CIBW_TEST_REQUIRES: "pytest"
           MACOSX_DEPLOYMENT_TARGET: "15.6"
 
-      - name: Upload artifacts
+      - name: Store artifact for publishing
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}
-          path: dist/*
+          name: python-packages-${{ matrix.os }}
+          path: wheelhouse/
 
-  publish:
-    needs: build
+  publish_to_pypi:
+    name: Publish to PyPI
+    needs: [build_packages] # This job waits for the build jobs to complete
     runs-on: ubuntu-latest
-    # This job only runs when a tag is pushed
-    if: github.ref_type == 'tag'
     steps:
-      - name: Clean previous builds
-        run: rm -rf dist build *.egg-info
-
-      # Download all built artifacts (Linux, macOS)
-      - uses: actions/download-artifact@v4
+      - name: Download all packages
+        uses: actions/download-artifact@v4
         with:
-          name: dist-ubuntu-latest
           path: dist
-      # - uses: actions/download-artifact@v4
-        # with: # TODO: Uncomment once Windows builds are fixed (see Issue #1)
-        #   name: dist-windows-latest
-        #   path: dist
-      - uses: actions/download-artifact@v4 # FIXME: 
-        with:
-          name: dist-macos-latest
-          path: dist
-
-      # Install Twine
-      - name: Install Twine
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade twine packaging
-
-      - name: DEBUG - Check Versions
-        run: |
-          python --version
-          pip --version
-          twine --version
-          python -c "import packaging; print('packaging version:', packaging.__version__)"
-          pip list
-
-      - name: Verify distributions
-        run: twine check dist/*
-
-      - name: Publish to TestPyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: twine upload --repository testpypi dist/*
+          pattern: python-packages-*
+          merge-multiple: true # Merges artifacts from all build jobs into one 'dist' directory
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload dist/*
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }} # Use your main PyPI token
+        run: |
+          pip install twine
+          twine upload "dist/*"
 
-  release:
-    needs: publish
+  create_github_release:
+    name: Create GitHub Release
+    needs: [publish_to_pypi] # This job waits for the PyPI publish to succeed
     runs-on: ubuntu-latest
-    # This job also only runs when a tag is pushed
-    if: github.ref_type == 'tag'
-    
-    # This grants the job permission to create a release
     permissions:
-      contents: write
-      
+      contents: write # Required to create a release
     steps:
-      # Download the artifacts from each build job, just like in the 'publish' job.
-      - name: Download all built artifacts
+      - name: Download all packages for release
         uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: dist-* # This pattern will download all artifacts starting with 'dist-'
-          merge-multiple: true # This merges them all into one 'dist' directory
+          pattern: python-packages-*
+          merge-multiple: true
 
-          
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # This tells the action to attach all files from the 'dist' directory
-          files: dist/*
-          generate_release_notes: true
+          files: "dist/*" # Attach all built packages to the release
+          generate_release_notes: true # Automatically create release notes
