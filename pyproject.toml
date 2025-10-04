@@ -27,7 +27,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-dev = ["pytest", "build", "twine"]
+dev = ["pytest", "build", "twine", "cibuildwheel"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
