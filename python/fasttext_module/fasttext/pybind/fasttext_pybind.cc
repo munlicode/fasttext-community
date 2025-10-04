@@ -23,9 +23,11 @@
 using namespace pybind11::literals;
 namespace py = pybind11;
 
-py::str castToPythonString(const std::string& s, const char* onUnicodeError) {
-  PyObject* handle = PyUnicode_DecodeUTF8(s.data(), s.length(), onUnicodeError);
-  if (!handle) {
+py::str castToPythonString(const std::string &s, const char *onUnicodeError)
+{
+  PyObject *handle = PyUnicode_DecodeUTF8(s.data(), s.length(), onUnicodeError);
+  if (!handle)
+  {
     throw py::error_already_set();
   }
 
@@ -33,7 +35,7 @@ py::str castToPythonString(const std::string& s, const char* onUnicodeError) {
   // for python 2 and not encoded for python 3 :
   // https://github.com/pybind/pybind11/blob/ccbe68b084806dece5863437a7dc93de20bd9b15/include/pybind11/pytypes.h#L930
 #if PY_MAJOR_VERSION < 3
-  PyObject* handle_encoded =
+  PyObject *handle_encoded =
       PyUnicode_AsEncodedString(handle, "utf-8", onUnicodeError);
   Py_DECREF(handle);
   handle = handle_encoded;
@@ -45,11 +47,13 @@ py::str castToPythonString(const std::string& s, const char* onUnicodeError) {
 }
 
 std::vector<std::pair<fasttext::real, py::str>> castToPythonString(
-    const std::vector<std::pair<fasttext::real, std::string>>& predictions,
-    const char* onUnicodeError) {
+    const std::vector<std::pair<fasttext::real, std::string>> &predictions,
+    const char *onUnicodeError)
+{
   std::vector<std::pair<fasttext::real, py::str>> transformedPredictions;
 
-  for (const auto& prediction : predictions) {
+  for (const auto &prediction : predictions)
+  {
     transformedPredictions.emplace_back(
         prediction.first,
         castToPythonString(prediction.second, onUnicodeError));
@@ -59,33 +63,40 @@ std::vector<std::pair<fasttext::real, py::str>> castToPythonString(
 }
 
 std::pair<std::vector<py::str>, std::vector<py::str>> getLineText(
-    fasttext::FastText& m,
+    fasttext::FastText &m,
     const std::string text,
-    const char* onUnicodeError) {
+    const char *onUnicodeError)
+{
   std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
   std::stringstream ioss(text);
   std::string token;
   std::vector<py::str> words;
   std::vector<py::str> labels;
-  while (d->readWord(ioss, token)) {
+  while (d->readWord(ioss, token))
+  {
     uint32_t h = d->hash(token);
     int32_t wid = d->getId(token, h);
     fasttext::entry_type type = wid < 0 ? d->getType(token) : d->getType(wid);
 
-    if (type == fasttext::entry_type::word) {
+    if (type == fasttext::entry_type::word)
+    {
       words.push_back(castToPythonString(token, onUnicodeError));
       // Labels must not be OOV!
-    } else if (type == fasttext::entry_type::label && wid >= 0) {
+    }
+    else if (type == fasttext::entry_type::label && wid >= 0)
+    {
       labels.push_back(castToPythonString(token, onUnicodeError));
     }
-    if (token == fasttext::Dictionary::EOS) {
+    if (token == fasttext::Dictionary::EOS)
+    {
       break;
-}
+    }
   }
   return std::pair<std::vector<py::str>, std::vector<py::str>>(words, labels);
 }
 
-PYBIND11_MODULE(fasttext_pybind, m) {
+PYBIND11_MODULE(fasttext_pybind, m)
+{
   py::class_<fasttext::Args>(m, "args")
       .def(py::init<>())
       .def_readwrite("input", &fasttext::Args::input)
@@ -125,9 +136,8 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           "autotunePredictions", &fasttext::Args::autotunePredictions)
       .def_readwrite("autotuneDuration", &fasttext::Args::autotuneDuration)
       .def_readwrite("autotuneModelSize", &fasttext::Args::autotuneModelSize)
-      .def("setManual", [](fasttext::Args& m, const std::string& argName) {
-        m.setManual(argName);
-      });
+      .def("setManual", [](fasttext::Args &m, const std::string &argName)
+           { m.setManual(argName); });
 
   py::enum_<fasttext::model_name>(m, "model_name")
       .value("cbow", fasttext::model_name::cbow)
@@ -157,12 +167,16 @@ PYBIND11_MODULE(fasttext_pybind, m) {
 
   m.def(
       "train",
-      [](fasttext::FastText& ft, fasttext::Args& a) {
-        if (a.hasAutotune()) {
+      [](fasttext::FastText &ft, fasttext::Args &a)
+      {
+        if (a.hasAutotune())
+        {
           fasttext::Autotune autotune(std::shared_ptr<fasttext::FastText>(
-              &ft, [](fasttext::FastText*) {}));
+              &ft, [](fasttext::FastText *) {}));
           autotune.train(a);
-        } else {
+        }
+        else
+        {
           ft.train(a);
         }
       },
@@ -170,42 +184,40 @@ PYBIND11_MODULE(fasttext_pybind, m) {
 
   py::class_<fasttext::Vector>(m, "Vector", py::buffer_protocol())
       .def(py::init<ssize_t>())
-      .def_buffer([](fasttext::Vector& m) -> py::buffer_info {
-        return py::buffer_info(
-            m.data(),
-            sizeof(fasttext::real),
-            py::format_descriptor<fasttext::real>::format(),
-            1,
-            {m.size()},
-            {sizeof(fasttext::real)});
-      });
+      .def_buffer([](fasttext::Vector &m) -> py::buffer_info
+                  { return py::buffer_info(
+                        m.data(),
+                        sizeof(fasttext::real),
+                        py::format_descriptor<fasttext::real>::format(),
+                        1,
+                        {m.size()},
+                        {sizeof(fasttext::real)}); });
 
   py::class_<fasttext::DenseMatrix>(
       m, "DenseMatrix", py::buffer_protocol(), py::module_local())
       .def(py::init<>())
       .def(py::init<ssize_t, ssize_t>())
-      .def_buffer([](fasttext::DenseMatrix& m) -> py::buffer_info {
-        return py::buffer_info(
-            m.data(),
-            sizeof(fasttext::real),
-            py::format_descriptor<fasttext::real>::format(),
-            2,
-            {m.size(0), m.size(1)},
-            {sizeof(fasttext::real) * m.size(1),
-             sizeof(fasttext::real) * (int64_t)1});
-      });
+      .def_buffer([](fasttext::DenseMatrix &m) -> py::buffer_info
+                  { return py::buffer_info(
+                        m.data(),
+                        sizeof(fasttext::real),
+                        py::format_descriptor<fasttext::real>::format(),
+                        2,
+                        {m.size(0), m.size(1)},
+                        {sizeof(fasttext::real) * m.size(1),
+                         sizeof(fasttext::real) * (int64_t)1}); });
 
   py::class_<fasttext::Meter>(m, "Meter")
       .def(py::init<bool>())
       .def("scoreVsTrue", &fasttext::Meter::scoreVsTrue)
       .def(
           "precisionRecallCurveLabel",
-          (std::vector<std::pair<double, double>>(fasttext::Meter::*)(int32_t)
+          (std::vector<std::pair<double, double>> (fasttext::Meter::*)(int32_t)
                const) &
               fasttext::Meter::precisionRecallCurve)
       .def(
           "precisionRecallCurve",
-          (std::vector<std::pair<double, double>>(fasttext::Meter::*)() const) &
+          (std::vector<std::pair<double, double>> (fasttext::Meter::*)() const) &
               fasttext::Meter::precisionRecallCurve)
       .def(
           "precisionAtRecallLabel",
@@ -229,7 +241,8 @@ PYBIND11_MODULE(fasttext_pybind, m) {
       .def("getArgs", &fasttext::FastText::getArgs)
       .def(
           "getInputMatrix",
-          [](fasttext::FastText& m) {
+          [](fasttext::FastText &m)
+          {
             std::shared_ptr<const fasttext::DenseMatrix> mm =
                 m.getInputMatrix();
             return mm.get();
@@ -237,7 +250,8 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           pybind11::return_value_policy::reference)
       .def(
           "getOutputMatrix",
-          [](fasttext::FastText& m) {
+          [](fasttext::FastText &m)
+          {
             std::shared_ptr<const fasttext::DenseMatrix> mm =
                 m.getOutputMatrix();
             return mm.get();
@@ -245,9 +259,10 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           pybind11::return_value_policy::reference)
       .def(
           "setMatrices",
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              py::buffer inputMatrixBuffer,
-             py::buffer outputMatrixBuffer) {
+             py::buffer outputMatrixBuffer)
+          {
             py::buffer_info inputMatrixInfo = inputMatrixBuffer.request();
             py::buffer_info outputMatrixInfo = outputMatrixBuffer.request();
 
@@ -255,26 +270,30 @@ PYBIND11_MODULE(fasttext_pybind, m) {
                 std::make_shared<fasttext::DenseMatrix>(
                     inputMatrixInfo.shape[0],
                     inputMatrixInfo.shape[1],
-                    static_cast<float*>(inputMatrixInfo.ptr)),
+                    static_cast<float *>(inputMatrixInfo.ptr)),
                 std::make_shared<fasttext::DenseMatrix>(
                     outputMatrixInfo.shape[0],
                     outputMatrixInfo.shape[1],
-                    static_cast<float*>(outputMatrixInfo.ptr)));
+                    static_cast<float *>(outputMatrixInfo.ptr)));
           })
       .def(
           "loadModel",
-          [](fasttext::FastText& m, std::string s) { m.loadModel(s); })
+          [](fasttext::FastText &m, std::string s)
+          { m.loadModel(s); })
       .def(
           "saveModel",
-          [](fasttext::FastText& m, std::string s) { m.saveModel(s); })
+          [](fasttext::FastText &m, std::string s)
+          { m.saveModel(s); })
       .def(
           "test",
-          [](fasttext::FastText& m,
-             const std::string& filename,
+          [](fasttext::FastText &m,
+             const std::string &filename,
              int32_t k,
-             fasttext::real threshold) {
+             fasttext::real threshold)
+          {
             std::ifstream ifs(filename);
-            if (!ifs.is_open()) {
+            if (!ifs.is_open())
+            {
               throw std::invalid_argument("Test file cannot be opened!");
             }
             fasttext::Meter meter(false);
@@ -285,9 +304,11 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "getMeter",
-          [](fasttext::FastText& m, const std::string& filename, int32_t k) {
+          [](fasttext::FastText &m, const std::string &filename, int32_t k)
+          {
             std::ifstream ifs(filename);
-            if (!ifs.is_open()) {
+            if (!ifs.is_open())
+            {
               throw std::invalid_argument("Test file cannot be opened!");
             }
             fasttext::Meter meter(true);
@@ -298,21 +319,25 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "getSentenceVector",
-          [](fasttext::FastText& m,
-             fasttext::Vector& v,
-             const std::string text) {
+          [](fasttext::FastText &m,
+             fasttext::Vector &v,
+             const std::string text)
+          {
             std::stringstream ioss(text);
             m.getSentenceVector(ioss, v);
           })
       .def(
           "tokenize",
-          [](fasttext::FastText& m, const std::string text) {
+          [](fasttext::FastText &m, const std::string text)
+          {
             std::vector<std::string> text_split;
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             std::stringstream ioss(text);
             std::string token;
-            while (!ioss.eof()) {
-              while (d->readWord(ioss, token)) {
+            while (!ioss.eof())
+            {
+              while (d->readWord(ioss, token))
+              {
                 text_split.push_back(token);
               }
             }
@@ -321,13 +346,15 @@ PYBIND11_MODULE(fasttext_pybind, m) {
       .def("getLine", &getLineText)
       .def(
           "multilineGetLine",
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              const std::vector<std::string> lines,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             std::vector<std::vector<py::str>> all_words;
             std::vector<std::vector<py::str>> all_labels;
-            for (const auto& text : lines) {
+            for (const auto &text : lines)
+            {
               auto pair = getLineText(m, text, onUnicodeError);
               all_words.push_back(pair.first);
               all_labels.push_back(pair.second);
@@ -338,13 +365,15 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "getVocab",
-          [](fasttext::FastText& m, const char* onUnicodeError) {
+          [](fasttext::FastText &m, const char *onUnicodeError)
+          {
             py::str s;
             std::vector<py::str> vocab_list;
             std::vector<int64_t> vocab_freq;
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             vocab_freq = d->getCounts(fasttext::entry_type::word);
-            for (int32_t i = 0; i < vocab_freq.size(); i++) {
+            for (size_t i = 0; i < vocab_freq.size(); i++)
+            {
               vocab_list.push_back(
                   castToPythonString(d->getWord(i), onUnicodeError));
             }
@@ -353,12 +382,14 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "getLabels",
-          [](fasttext::FastText& m, const char* onUnicodeError) {
+          [](fasttext::FastText &m, const char *onUnicodeError)
+          {
             std::vector<py::str> labels_list;
             std::vector<int64_t> labels_freq;
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             labels_freq = d->getCounts(fasttext::entry_type::label);
-            for (int32_t i = 0; i < labels_freq.size(); i++) {
+            for (size_t i = 0; i < labels_freq.size(); i++)
+            {
               labels_list.push_back(
                   castToPythonString(d->getLabel(i), onUnicodeError));
             }
@@ -367,7 +398,7 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "quantize",
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              const std::string input,
              bool qout,
              int32_t cutoff,
@@ -377,7 +408,8 @@ PYBIND11_MODULE(fasttext_pybind, m) {
              int thread,
              int verbose,
              int32_t dsub,
-             bool qnorm) {
+             bool qnorm)
+          {
             fasttext::Args qa = fasttext::Args();
             qa.input = input;
             qa.qout = qout;
@@ -395,11 +427,12 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           "predict",
           // NOTE: text needs to end in a newline
           // to exactly mimic the behavior of the cli
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              const std::string text,
              int32_t k,
              fasttext::real threshold,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             std::stringstream ioss(text);
             std::vector<std::pair<fasttext::real, std::string>> predictions;
             m.predictLine(ioss, predictions, k, threshold);
@@ -410,22 +443,25 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           "multilinePredict",
           // NOTE: text needs to end in a newline
           // to exactly mimic the behavior of the cli
-          [](fasttext::FastText& m,
-             const std::vector<std::string>& lines,
+          [](fasttext::FastText &m,
+             const std::vector<std::string> &lines,
              int32_t k,
              fasttext::real threshold,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             std::vector<py::array_t<fasttext::real>> allProbabilities;
             std::vector<std::vector<py::str>> allLabels;
             std::vector<std::pair<fasttext::real, std::string>> predictions;
 
-            for (const std::string& text : lines) {
+            for (const std::string &text : lines)
+            {
               std::stringstream ioss(text);
               m.predictLine(ioss, predictions, k, threshold);
               std::vector<fasttext::real> probabilities;
               std::vector<py::str> labels;
 
-              for (const auto& prediction : predictions) {
+              for (const auto &prediction : predictions)
+              {
                 probabilities.push_back(prediction.first);
                 labels.push_back(
                     castToPythonString(prediction.second, onUnicodeError));
@@ -440,19 +476,22 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "testLabel",
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              const std::string filename,
              int32_t k,
-             fasttext::real threshold) {
+             fasttext::real threshold)
+          {
             std::ifstream ifs(filename);
-            if (!ifs.is_open()) {
+            if (!ifs.is_open())
+            {
               throw std::invalid_argument("Test file cannot be opened!");
             }
             fasttext::Meter meter(false);
             m.test(ifs, k, threshold, meter);
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             std::unordered_map<std::string, py::dict> returnedValue;
-            for (int32_t i = 0; i < d->nlabels(); i++) {
+            for (int32_t i = 0; i < d->nlabels(); i++)
+            {
               returnedValue[d->getLabel(i)] = py::dict(
                   "precision"_a = meter.precision(i),
                   "recall"_a = meter.recall(i),
@@ -463,60 +502,69 @@ PYBIND11_MODULE(fasttext_pybind, m) {
           })
       .def(
           "getWordId",
-          [](fasttext::FastText& m, const std::string& word) {
+          [](fasttext::FastText &m, const std::string &word)
+          {
             return m.getWordId(word);
           })
       .def(
           "getSubwordId",
-          [](fasttext::FastText& m, const std::string word) {
+          [](fasttext::FastText &m, const std::string word)
+          {
             return m.getSubwordId(word);
           })
       .def(
           "getLabelId",
-          [](fasttext::FastText& m, const std::string& label) {
+          [](fasttext::FastText &m, const std::string &label)
+          {
             return m.getLabelId(label);
           })
       .def(
           "getInputVector",
-          [](fasttext::FastText& m, fasttext::Vector& vec, int32_t ind) {
+          [](fasttext::FastText &m, fasttext::Vector &vec, int32_t ind)
+          {
             m.getInputVector(vec, ind);
           })
       .def(
           "getWordVector",
-          [](fasttext::FastText& m,
-             fasttext::Vector& vec,
-             const std::string word) { m.getWordVector(vec, word); })
+          [](fasttext::FastText &m,
+             fasttext::Vector &vec,
+             const std::string word)
+          { m.getWordVector(vec, word); })
       .def(
           "getNN",
-          [](fasttext::FastText& m,
-             const std::string& word,
+          [](fasttext::FastText &m,
+             const std::string &word,
              int32_t k,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             return castToPythonString(m.getNN(word, k), onUnicodeError);
           })
       .def(
           "getAnalogies",
-          [](fasttext::FastText& m,
-             const std::string& wordA,
-             const std::string& wordB,
-             const std::string& wordC,
+          [](fasttext::FastText &m,
+             const std::string &wordA,
+             const std::string &wordB,
+             const std::string &wordC,
              int32_t k,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             return castToPythonString(
                 m.getAnalogies(k, wordA, wordB, wordC), onUnicodeError);
           })
       .def(
           "getSubwords",
-          [](fasttext::FastText& m,
+          [](fasttext::FastText &m,
              const std::string word,
-             const char* onUnicodeError) {
+             const char *onUnicodeError)
+          {
             std::vector<std::string> subwords;
             std::vector<int32_t> ngrams;
             std::shared_ptr<const fasttext::Dictionary> d = m.getDictionary();
             d->getSubwords(word, ngrams, subwords);
             std::vector<py::str> transformedSubwords;
 
-            for (const auto& subword : subwords) {
+            for (const auto &subword : subwords)
+            {
               transformedSubwords.push_back(
                   castToPythonString(subword, onUnicodeError));
             }
@@ -524,5 +572,6 @@ PYBIND11_MODULE(fasttext_pybind, m) {
             return std::pair<std::vector<py::str>, std::vector<int32_t>>(
                 transformedSubwords, ngrams);
           })
-      .def("isQuant", [](fasttext::FastText& m) { return m.isQuant(); });
+      .def("isQuant", [](fasttext::FastText &m)
+           { return m.isQuant(); });
 }

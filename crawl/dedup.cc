@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-uint64_t fnv1a_64(uint8_t *data, size_t sz, uint64_t h=14695981039346656037ull)
+std::uint64_t fnv1a_64(uint8_t *data, size_t sz, std::uint64_t h=14695981039346656037ull)
 {
   for (size_t i = 0; i < sz; i++, data++) {
-    h ^= uint64_t(*data);
+    h ^= std::uint64_t(*data);
     h *= 1099511628211ull;
   }
   return h;
@@ -21,7 +21,7 @@ uint64_t fnv1a_64(uint8_t *data, size_t sz, uint64_t h=14695981039346656037ull)
 
 int main(int argc, char** argv)
 {
-  uint64_t init_values[] = {
+  std::uint64_t init_values[] = {
     14695981039346656037ull,
     9425296925403859339ull,
     13716263814064014149ull,
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   for (std::string line; std::getline(std::cin, line);) {
     bool b = true;
     for (size_t i = 0; i < num_hashes; i++) {
-      uint64_t h = fnv1a_64((uint8_t*) line.data(), line.length(), init_values[i]) % n;
+      std::uint64_t h = fnv1a_64((uint8_t*) line.data(), line.length(), init_values[i]) % n;
       b = b && seen[h];
       seen[h] = true;
     }

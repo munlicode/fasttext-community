@@ -19,9 +19,9 @@ namespace fasttext {
 
 class Meter {
   struct Metrics {
-    uint64_t gold;
-    uint64_t predicted;
-    uint64_t predictedGold;
+    std::uint64_t gold;
+    std::uint64_t predicted;
+    std::uint64_t predictedGold;
     mutable std::vector<std::pair<real, real>> scoreVsTrue;
 
     Metrics() : gold(0), predicted(0), predictedGold(0), scoreVsTrue() {}
@@ -49,7 +49,7 @@ class Meter {
       return scoreVsTrue;
     }
   };
-  std::vector<std::pair<uint64_t, uint64_t>> getPositiveCounts(
+  std::vector<std::pair<std::uint64_t, std::uint64_t>> getPositiveCounts(
       int32_t labelId) const;
 
  public:
@@ -76,14 +76,14 @@ class Meter {
   double precision() const;
   double recall() const;
   double f1Score() const;
-  uint64_t nexamples() const {
+  std::uint64_t nexamples() const {
     return nexamples_;
   }
   void writeGeneralMetrics(std::ostream& out, int32_t k) const;
 
  private:
   Metrics metrics_{};
-  uint64_t nexamples_;
+  std::uint64_t nexamples_;
   std::unordered_map<int32_t, Metrics> labelMetrics_;
   bool falseNegativeLabels_;
 };
