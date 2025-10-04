@@ -19,6 +19,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Display pyproject.toml Content
+        run: |
+          echo "--- Contents of pyproject.toml ---"
+          cat pyproject.toml
+          echo "------------------------------------"
+
       - name: Install build tools
         run: pip install cibuildwheel twine
 
