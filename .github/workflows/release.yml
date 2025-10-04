@@ -19,6 +19,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install build tools
+        run: pip install cibuildwheel
+
       - name: Build sdist and wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
