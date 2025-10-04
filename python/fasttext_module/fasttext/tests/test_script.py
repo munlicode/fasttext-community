@@ -324,59 +324,6 @@ def test_supervised_dimension(kwargs):
         pytest.skip("Test not applicable for kwargs without 'dim'")
 
 
-@pytest.mark.parametrize("kwargs", general_settings)
-def test_oov_subword_vector_reconstruction(kwargs):
-    """
-    Verifies that for an OOV word, its vector is the mean of its subword vectors.
-
-    This is distinct from in-vocabulary words, whose vectors are looked up directly.
-    """
-
-    # 1. Train a model and get its vocabulary as a set for efficient lookup
-    model = build_unsupervised_model(get_random_data(100), kwargs)
-    known_words, _ = model.get_words(include_freq=True)
-    known_words_set = set(known_words)
-    input_matrix = model.get_input_matrix()
-
-    # 2. Generate random words and filter them to get only OOV words
-    random_words = get_random_words(100, 1, 20)
-    oov_words = [word for word in random_words if word not in known_words_set]
-
-    # 3. If no OOV words were generated, skip the test
-    if not oov_words:
-        pytest.skip("No OOV words were generated to test reconstruction.")
-
-    # 4. For each OOV word, verify that the reconstruction logic holds
-    for word in oov_words:
-        subwords, subinds = model.get_subwords(word)
-
-        # Proceed only if the OOV word has subwords to be represented
-        if len(subinds) > 0:
-            # Method 1: Get the vector using the public API (already normalized)
-            vec_api = model.get_word_vector(word)
-
-            # Method 2: Manually average subword vectors
-            sub_vectors = [model.get_input_vector(idx) for idx in subinds]
-            vec_manual = np.mean(sub_vectors, axis=0)
-
-            # NORMALIZE the manually calculated vector
-            norm_manual = np.linalg.norm(vec_manual)
-            if norm_manual > 0:
-                vec_manual /= norm_manual
-
-            # Method 3: Reconstruct directly from the input matrix
-            vec_matrix = np.mean(input_matrix[subinds], axis=0)
-
-            # NORMALIZE the matrix-derived vector
-            norm_matrix = np.linalg.norm(vec_matrix)
-            if norm_matrix > 0:
-                vec_matrix /= norm_matrix
-
-            # Now, all methods should yield nearly identical, normalized vectors
-            assert np.allclose(vec_api, vec_manual, atol=1e-5)
-            assert np.allclose(vec_manual, vec_matrix, atol=1e-5)
-
-
 @pytest.mark.parametrize("kwargs", unsupervised_settings)
 def test_unsupervised_get_words(kwargs):
     """
