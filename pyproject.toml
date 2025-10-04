@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "wheel", "pip>=24.0", "pybind11"]
+requires = ["setuptools>=80", "wheel", "pybind11"]
 build-backend = "setuptools.build_meta"
 
 
@@ -12,18 +12,30 @@ requires-python = ">=3.9, <3.14"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
+    { name = "Onur Celebi", email = "celebio@fb.com" },
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" }
 ]
-urls = { "Homepage" = "https://github.com/munlicode/fasttext-community" }
-dependencies = ["pybind11>=2.2", "setuptools>=0.7.0", "numpy"]
+dependencies = [
+    "numpy",
+    "pybind11>=2.2",
+]
+
 
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
 ]
+
+
+[project.urls]
+Homepage = "https://github.com/munlicode/fasttext-community"
+"Bug Tracker" = "https://github.com/munlicode/fasttext-community/issues"
+"Source Code" = "https://github.com/munlicode/fasttext-community"
 
 [project.optional-dependencies]
 test = ["pytest"]
