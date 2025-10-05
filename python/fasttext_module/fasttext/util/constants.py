@@ -57,7 +57,7 @@ VectorsEnglishType = Literal[
     "crawl-300d-2M.vec.zip",
     "crawl-300d-2M-subword.zip",
 ]
-VectorsCrawlType = Literal["cc.{lang_id}.300.bin.gz", "cc.{lang_id}.300.vec.gz"]
+VectorsCrawlType = Literal["bin", "vec"]
 VectorsWikiType = Literal["bin+text", "text"]
 LangIdType = Literal["lid.176.bin", "lid.176.ftz"]
 TextClassificationType = Literal[
