@@ -73,14 +73,18 @@ def get_random_words(N, a=1, b=20, unique=True, alphanumeric=False):
 def get_random_data(
     num_lines=100,
     max_vocab_size=100,
-    min_words_line=1,  # change 0 → 1
+    min_words_line=1,
     max_words_line=20,
     min_len_word=1,
     max_len_word=10,
     unique_words=True,
 ):
     random_words = get_random_words(
-        max_vocab_size, min_len_word, max_len_word, unique=unique_words
+        max_vocab_size,
+        min_len_word,
+        max_len_word,
+        unique=unique_words,
+        alphanumeric=True,
     )
     lines = []
     for _ in range(num_lines):
