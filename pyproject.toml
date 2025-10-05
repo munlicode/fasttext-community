@@ -40,8 +40,8 @@ Homepage = "https://github.com/munlicode/fasttext-community"
 "Source Code" = "https://github.com/munlicode/fasttext-community"
 
 [project.optional-dependencies]
-test = ["pytest"]
-dev = ["pytest", "build", "twine", "cibuildwheel"]
+test = ["pytest", "pytest-mock"]
+dev = ["pytest", "pytest-mock", "build", "twine", "cibuildwheel"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
