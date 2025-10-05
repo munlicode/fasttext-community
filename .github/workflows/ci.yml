@@ -2,17 +2,18 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ main ]
     paths-ignore:
       - '**.md'
       - '**.rst'
       - 'docs/**'
+
   pull_request:
     branches: [ main ]
     paths-ignore:
       - '**.md'
       - '**.rst'
       - 'docs/**'
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

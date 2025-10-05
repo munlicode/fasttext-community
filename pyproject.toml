@@ -12,12 +12,14 @@ requires-python = ">=3.9, <3.14"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
-    { name = "Onur Celebi", email = "celebio@fb.com" },
-    { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" }
+    { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" },
+    { name = "Onur Celebi", email = "celebio@fb.com" }
 ]
 dependencies = [
     "numpy",
     "pybind11>=2.2",
+    "requests",
+    "tqdm",    
 ]
 
 
@@ -38,8 +40,8 @@ Homepage = "https://github.com/munlicode/fasttext-community"
 "Source Code" = "https://github.com/munlicode/fasttext-community"
 
 [project.optional-dependencies]
-test = ["pytest"]
-dev = ["pytest", "build", "twine", "cibuildwheel"]
+test = ["pytest", "pytest-mock"]
+dev = ["pytest", "pytest-mock", "build", "twine", "cibuildwheel"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
