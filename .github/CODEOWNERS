@@ -1,0 +1,19 @@
+# Protect all workflow, issue templates, and other repository configurations.
+# The single asterisk (*) is a wildcard for all files and folders inside.
+.github/  @munlicode
+
+# Protect important root-level configuration and legal files.
+/Makefile          @munlicode
+/LICENSE           @munlicode
+/CMakeLists.txt    @munlicode
+/pyproject.toml    @munlicode
+/PACKAGE           @munlicode
+/.gitignore        @munlicode
+/MANIFEST.in       @munlicode
+/fasttext.pc.in    @munlicode
+/setup.py          @munlicode
+/setup.cfg         @munlicode     
+/Pipfile           @munlicode   
+/requirements.txt  @munlicode           
+/Pipfile.lock      @munlicode       
+/poetry.lock       @munlicode       
