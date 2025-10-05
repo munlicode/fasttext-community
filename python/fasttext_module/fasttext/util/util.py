@@ -230,7 +230,7 @@ def download_model(
 def download_model(
     category: Literal["datasets"],
     *,
-    model_name: Literal["default"],
+    model_type: Literal["default"],
     save_dir: str = ".",
     if_exists: IF_EXISTS_TYPE = "ignore",
     auth: Optional[Union[tuple, str]] = None,

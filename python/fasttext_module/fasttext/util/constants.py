@@ -8,8 +8,8 @@ OFFICIAL_MODELS_LINKS = {
         "https://dl.fbaipublicfiles.com/fasttext/vectors-english/crawl-300d-2M-subword.zip",
     ],
     "vectors_crawl": {
-        "cc.{lang_id}.300.bin.gz": "https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.{lang_id}.300.bin.gz",
-        "cc.{lang_id}.300.vec.gz": "https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.{lang_id}.300.vec.gz",
+        "bin": "https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.{lang_id}.300.bin.gz",
+        "vec": "https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.{lang_id}.300.vec.gz",
     },
     "vectors_wiki": {
         "bin+text": "https://dl.fbaipublicfiles.com/fasttext/vectors-wiki/wiki.{lang_id}.zip",
