@@ -19,27 +19,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-      - name: Check Initial Tool Versions (Before Upgrade)
-        # ✅ This step shows the default tool versions on the runner.
-        run: |
-          echo "--- Initial Tool Versions ---"
-          python -m pip --version
-          python -c "import setuptools; print('setuptools:', setuptools.__version__)"
-          python -c "import wheel; print('wheel:', wheel.__version__)"
-          echo "-----------------------------"
-
       - name: Update core build tools
         run: python -m pip install --upgrade pip setuptools wheel
-
-      - name: Check Upgraded Tool Versions (After Upgrade)
-        # ✅ This step shows the new versions that will be used for the build.
-        run: |
-          echo "--- Upgraded Tool Versions ---"
-          python -m pip --version
-          python -c "import setuptools; print('setuptools:', setuptools.__version__)"
-          python -c "import wheel; print('wheel:', wheel.__version__)"
-          echo "----------------------------"
 
       - name: Install build tools
         run: pip install cibuildwheel twine
