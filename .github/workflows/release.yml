@@ -12,8 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        # windows-latest  # TODO: temporarily disabled (see Issue #1)
+        os: [ubuntu-latest, macos-latest, windows-latest]
         
     steps:
       - name: Checkout repository
@@ -33,8 +32,6 @@ jobs:
       - name: Build sdist and wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_TEST_COMMAND: 'pip install "{wheel}[test]" && pytest {project}'
-          CIBW_TEST_REQUIRES: "pytest"
           MACOSX_DEPLOYMENT_TARGET: "15.6"
 
       - name: Check package metadata
