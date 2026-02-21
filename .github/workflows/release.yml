@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*' # This workflow only runs on tags like v0.11.0
+      - "v*.*.*" # This workflow only runs on tags like v0.11.0
 
 jobs:
   build_packages:
@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Update core build tools
         run: python -m pip install --upgrade pip setuptools wheel
@@ -32,7 +32,7 @@ jobs:
       - name: Build sdist and wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
-          MACOSX_DEPLOYMENT_TARGET: "15.6"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
 
       - name: Check package metadata
         run: python -m twine check wheelhouse/*
@@ -51,7 +51,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Download all packages
         uses: actions/download-artifact@v4

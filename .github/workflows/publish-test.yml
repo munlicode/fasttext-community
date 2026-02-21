@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install build tools
         run: pip install cibuildwheel twine
@@ -28,7 +28,7 @@ jobs:
         env:
           CIBW_TEST_COMMAND: 'pip install "{wheel}[test]" && pytest {project}'
           CIBW_TEST_REQUIRES: "pytest"
-          MACOSX_DEPLOYMENT_TARGET: "15.6"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
 
       - name: Build sdist (source distribution)
         if: matrix.os == 'ubuntu-latest'

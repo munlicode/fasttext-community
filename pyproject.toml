@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fasttext-community"
-version = "0.11.3"
+version = "0.11.5"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
 requires-python = ">=3.9, <3.14"
@@ -13,14 +13,9 @@ license = "MIT"
 license-files = ["LICENSE"]
 authors = [
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" },
-    { name = "Onur Celebi", email = "celebio@fb.com" }
+    { name = "Onur Celebi", email = "celebio@fb.com" },
 ]
-dependencies = [
-    "numpy",
-    "pybind11>=2.2",
-    "requests",
-    "tqdm",    
-]
+dependencies = ["numpy", "pybind11>=2.2", "requests", "tqdm"]
 
 
 classifiers = [
