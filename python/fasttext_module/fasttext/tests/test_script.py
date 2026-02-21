@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 from fasttext import train_supervised
 from fasttext import util
 import fasttext
+import os
 import tempfile
 import numpy as np
 import pytest
@@ -119,23 +120,29 @@ def test_supervised_util_test(kwargs):
     train_data = data[: 2 * third]
     valid_data = data[third:]
 
-    # 2. Use temporary files to hold the data
-    with (
-        tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8") as train_file,
-        tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8") as valid_file,
-    ):
-
+    # 2. Write data to temp files and close them before passing paths to C++.
+    # On Windows, NamedTemporaryFile holds an exclusive lock while open,
+    # preventing the C++ layer from opening the same file by name.
+    train_file = tempfile.NamedTemporaryFile(
+        mode="w", encoding="UTF-8", delete=False, suffix=".txt"
+    )
+    valid_file = tempfile.NamedTemporaryFile(
+        mode="w", encoding="UTF-8", delete=False, suffix=".txt"
+    )
+    train_path = train_file.name
+    valid_path = valid_file.name
+    try:
         for line in train_data:
             train_file.write(f"__label__{line.strip()}\n")
-        train_file.flush()
+        train_file.close()
 
         for line in valid_data:
             valid_file.write(f"__label__{line.strip()}\n")
-        valid_file.flush()
+        valid_file.close()
 
         # 3. Train the model on the training data, NOW WITH NaN HANDLING
         try:
-            model = train_supervised(input=train_file.name, **kwargs)
+            model = train_supervised(input=train_path, **kwargs)
         except RuntimeError as e:
             if "Encountered NaN" in str(e):
                 pytest.skip(f"fastText training diverged (NaN) with kwargs={kwargs}")
@@ -144,16 +151,16 @@ def test_supervised_util_test(kwargs):
         # 4. Manually get predictions and true labels from the validation file
         true_labels = []
         all_words = []
-        valid_file.seek(0)
-        for line in valid_file:
-            stripped_line = line.strip()
-            if not stripped_line:
-                continue
-            words, labels = model.get_line(stripped_line)
-            if not labels:
-                continue
-            all_words.append(" ".join(words))
-            true_labels.append(labels)
+        with open(valid_path, encoding="UTF-8") as f:
+            for line in f:
+                stripped_line = line.strip()
+                if not stripped_line:
+                    continue
+                words, labels = model.get_line(stripped_line)
+                if not labels:
+                    continue
+                all_words.append(" ".join(words))
+                true_labels.append(labels)
 
         # 5. Get predictions and calculate precision/recall with `util.test`
         predictions, _ = model.predict(all_words)
@@ -161,12 +168,21 @@ def test_supervised_util_test(kwargs):
         N = len(predictions)
 
         # 6. Get results directly from `model.test()`
-        Nt, pt, rt = model.test(valid_file.name)
+        Nt, pt, rt = model.test(valid_path)
 
         # 7. Assert that the results from both methods are identical
         assert N == Nt
         assert p == pt
         assert r == rt
+    finally:
+        try:
+            os.unlink(train_path)
+        except OSError:
+            pass
+        try:
+            os.unlink(valid_path)
+        except OSError:
+            pass
 
 
 @pytest.mark.parametrize("kwargs", supervised_settings)

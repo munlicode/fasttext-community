@@ -45,3 +45,13 @@ dev = ["pytest", "pytest-mock", "build", "twine", "cibuildwheel"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
+
+[tool.cibuildwheel]
+build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
+test-extras = ["test"]
+test-command = "pytest {project}"
+build-verbosity = 1
+
+[tool.cibuildwheel.windows]
+# 32-bit builds are not supported (MSVC intrinsics / numpy drop win32 support)
+archs = ["AMD64"]

@@ -92,7 +92,7 @@ namespace fasttext
       Predictions &heap,
       const Vector &output) const
   {
-    for (int32_t i = 0; i < output.size(); i++)
+    for (size_t i = 0; i < output.size(); i++)
     {
       if (output[i] < threshold)
       {

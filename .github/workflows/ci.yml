@@ -25,9 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.9', '3.13']
-        # windows-latest  # TODO: temporarily disabled (see Issue #1)
 
     steps:
       - name: Checkout repository
