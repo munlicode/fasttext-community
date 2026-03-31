@@ -47,6 +47,9 @@ test-extras = ["test"]
 test-command = "pytest {project}"
 build-verbosity = 1
 
+[tool.cibuildwheel.macos]
+archs = ["arm64", "x86_64", "universal2"]
+
 [tool.cibuildwheel.windows]
 # 32-bit builds are not supported (MSVC intrinsics / numpy drop win32 support)
 archs = ["AMD64"]
