@@ -47,6 +47,9 @@ test-extras = ["test"]
 test-command = "pytest {project}"
 build-verbosity = 1
 
+[tool.cibuildwheel.linux]
+archs = ["auto"]
+
 [tool.cibuildwheel.macos]
 archs = ["arm64", "x86_64", "universal2"]
 

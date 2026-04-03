@@ -77,13 +77,6 @@ ext_modules = [
             FASTTEXT_SRC,
         ],
         language="c++",
-        extra_compile_args=[
-            (
-                "-O0 -fno-inline -fprofile-arcs -pthread -march=native"
-                if coverage
-                else "-O3 -funroll-loops -pthread -march=native"
-            )
-        ],
     ),
 ]
 
@@ -118,8 +111,8 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
     c_opts = {
-        "msvc": ["/EHsc"],
-        "unix": [],
+        "msvc": ["/EHsc", "/O2"],
+        "unix": ["-O3", "-funroll-loops", "-pthread"],
     }
 
     def build_extensions(self):
@@ -144,6 +137,8 @@ class BuildExt(build_ext):
         extra_link_args = []
 
         if coverage:
+            opts = [o for o in opts if o not in ("-O3", "-funroll-loops")]
+            opts += ["-O0", "-fno-inline", "-fprofile-arcs"]
             coverage_option = "--coverage"
             opts.append(coverage_option)
             extra_link_args.append(coverage_option)

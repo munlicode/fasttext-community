@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
 
     steps:
       - name: Checkout repository
@@ -29,10 +29,16 @@ jobs:
       - name: Install build tools
         run: pip install cibuildwheel twine
 
-      - name: Build sdist and wheels
+      - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
         env:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
+
+      - name: Build sdist
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pip install build
+          python -m build --sdist --outdir wheelhouse
 
       - name: Check package metadata
         run: python -m twine check wheelhouse/*
