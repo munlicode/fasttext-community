@@ -20,7 +20,7 @@ include_directories(fasttext)
 if(WIN32)
     set(CMAKE_CXX_FLAGS " -std=c++17 -funroll-loops -O3")
 else()
-    set(CMAKE_CXX_FLAGS " -pthread -std=c++17 -funroll-loops -O3 -march=native")
+    set(CMAKE_CXX_FLAGS " -pthread -std=c++17 -funroll-loops -O3")
 endif()
 
 set(HEADER_FILES
