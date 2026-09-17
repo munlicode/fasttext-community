@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "wheel", "pybind11"]
+requires = ["pybind11>=3.0", "setuptools>=80", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
@@ -8,14 +8,14 @@ name = "fasttext-community"
 version = "0.11.7"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.9, <3.14"
+requires-python = ">=3.9, <3.15"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" },
     { name = "Onur Celebi", email = "celebio@fb.com" },
 ]
-dependencies = ["numpy", "pybind11>=2.2", "requests", "tqdm"]
+dependencies = ["numpy", "pybind11>=3.0", "requests", "tqdm"]
 
 
 classifiers = [
@@ -36,13 +36,13 @@ Homepage = "https://github.com/munlicode/fasttext-community"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-mock"]
-dev = ["pytest", "pytest-mock", "build", "twine", "cibuildwheel"]
+dev = ["build", "cibuildwheel>=4.0,<5", "pytest", "pytest-mock", "twine"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
 
 [tool.cibuildwheel]
-build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
 test-extras = ["test"]
 test-command = "pytest {project}"
 build-verbosity = 1
