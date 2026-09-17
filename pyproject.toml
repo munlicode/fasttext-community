@@ -15,7 +15,7 @@ authors = [
     { name = "Nurzhan Muratkhan", email = "nurzhanmuratkhan@gmail.com" },
     { name = "Onur Celebi", email = "celebio@fb.com" },
 ]
-dependencies = ["numpy", "pybind11>=3.0", "requests", "tqdm"]
+dependencies = ["numpy", "requests", "tqdm"]
 
 
 classifiers = [
