@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -27,7 +27,7 @@ jobs:
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install build tools
-        run: pip install cibuildwheel twine
+        run: pip install "cibuildwheel>=4.0,<5" twine
 
       - name: Build wheels
         run: cibuildwheel --output-dir wheelhouse
@@ -44,7 +44,7 @@ jobs:
         run: python -m twine check wheelhouse/*
 
       - name: Store artifact for publishing
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-packages-${{ matrix.os }}
           path: wheelhouse/
@@ -55,12 +55,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
       - name: Download all packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: wheelhouse
           pattern: python-packages-*
@@ -83,14 +83,14 @@ jobs:
       contents: write
     steps:
       - name: Download all packages for release
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: wheelhouse
           pattern: python-packages-*
           merge-multiple: true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: "wheelhouse/*"
           generate_release_notes: true

@@ -27,7 +27,7 @@ In this document we present how to use fastText in python.
 # Requirements
 
 [fastText](https://fasttext.cc/) builds on modern Mac OS and Linux distributions.
-Since it uses C\++11 features, it requires a compiler with good C++11 support. You will need [Python](https://www.python.org/) (version 2.7 or ≥ 3.4), [NumPy](http://www.numpy.org/) & [SciPy](https://www.scipy.org/) and [pybind11](https://github.com/pybind/pybind11).
+Since it uses C\++11 features, it requires a compiler with good C++11 support. You will need [Python](https://www.python.org/) (version >=3.9, <3.15), [NumPy](http://www.numpy.org/) & [SciPy](https://www.scipy.org/) and [pybind11](https://github.com/pybind/pybind11).
 
 
 # Installation
