@@ -86,6 +86,7 @@ namespace fasttext
 
     input_ = std::dynamic_pointer_cast<Matrix>(inputMatrix);
     output_ = std::dynamic_pointer_cast<Matrix>(outputMatrix);
+    quant_ = false;
     wordVectors_.reset();
     args_->dim = input_->size(1);
 
@@ -285,6 +286,7 @@ namespace fasttext
 
   void FastText::loadModel(std::istream &in)
   {
+    quant_ = false;
     args_ = std::make_shared<Args>();
     input_ = std::make_shared<DenseMatrix>();
     output_ = std::make_shared<DenseMatrix>();
@@ -378,6 +380,12 @@ namespace fasttext
 
   void FastText::quantize(const Args &qargs, const TrainCallback &callback)
   {
+    if (quant_)
+    {
+      throw std::invalid_argument(
+          "Model is already quantized. "
+          "Quantize the original (non-quantized) model instead.");
+    }
     if (args_->model != model_name::sup)
     {
       throw std::invalid_argument(
