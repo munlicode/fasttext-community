@@ -285,6 +285,7 @@ namespace fasttext
 
   void FastText::loadModel(std::istream &in)
   {
+    wordVectors_.reset();
     args_ = std::make_shared<Args>();
     input_ = std::make_shared<DenseMatrix>();
     output_ = std::make_shared<DenseMatrix>();
@@ -391,6 +392,10 @@ namespace fasttext
     std::shared_ptr<DenseMatrix> output =
         std::dynamic_pointer_cast<DenseMatrix>(output_);
     bool normalizeGradient = (args_->model == model_name::sup);
+
+    // input_ is replaced below (and dict_ pruned if cutoff > 0), so the
+    // cached word vectors used by getNN/getAnalogies are stale either way.
+    wordVectors_.reset();
 
     if (qargs.cutoff > 0 && static_cast<size_t>(qargs.cutoff) < static_cast<size_t>(input->size(0)))
     {
@@ -878,6 +883,7 @@ namespace fasttext
 
   void FastText::train(const Args &args, const TrainCallback &callback)
   {
+    wordVectors_.reset();
     args_ = std::make_shared<Args>(args);
     dict_ = std::make_shared<Dictionary>(args_);
     if (args_->input == "-")
