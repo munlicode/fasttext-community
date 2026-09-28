@@ -800,9 +800,8 @@ namespace fasttext
     }
     catch (const std::exception &)
     {
-      // Any other exception (e.g. a size mismatch thrown by Vector::addRow)
-      // must not escape a std::thread's entry function: that calls
-      // std::terminate() instead of surfacing as a Python exception.
+      // E.g. a Vector size check. An exception escaping a std::thread
+      // calls std::terminate(); store it so startThreads() rethrows it.
       trainException_ = std::current_exception();
     }
     if (threadId == 0)
