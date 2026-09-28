@@ -1,3 +1,8 @@
+# SPDX-FileContributor: Arthit Suriyawongkul
+# SPDX-FileCopyrightText: 2026-present, fasttext-community
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: MIT
+
 """Vector index and size errors must raise, not access out of bounds."""
 
 import pytest
