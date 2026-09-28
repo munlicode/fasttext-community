@@ -1,3 +1,8 @@
+# SPDX-FileContributor: Arthit Suriyawongkul
+# SPDX-FileCopyrightText: 2026-present, fasttext-community
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: MIT
+
 """Cached word data must be rebuilt when the model changes."""
 
 import pytest
