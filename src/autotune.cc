@@ -215,6 +215,15 @@ Autotune::Autotune(const std::shared_ptr<FastText>& fastText)
       strategy_(),
       timer_() {}
 
+Autotune::~Autotune() noexcept {
+  // An exception leaving train() skips its timer join, and destroying a
+  // joinable std::thread calls std::terminate().
+  if (timer_.joinable()) {
+    continueTraining_ = false;
+    timer_.join();
+  }
+}
+
 void Autotune::printInfo(double maxDuration) {
   double progress = elapsed_ * 100 / maxDuration;
   progress = std::min(progress, 100.0);
