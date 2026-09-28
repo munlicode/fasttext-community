@@ -8,10 +8,9 @@
 
 #include "vector.h"
 
-#include <assert.h>
-
 #include <cmath>
 #include <iomanip>
+#include <stdexcept>
 
 #include "matrix.h"
 
@@ -38,36 +37,47 @@ void Vector::mul(real a) {
 }
 
 void Vector::addVector(const Vector& source) {
-  assert(size() == source.size());
+  if (size() != source.size()) {
+    throw std::invalid_argument("Vector::addVector: size mismatch");
+  }
   for (int64_t i = 0; i < size(); i++) {
     data_[i] += source.data_[i];
   }
 }
 
 void Vector::addVector(const Vector& source, real s) {
-  assert(size() == source.size());
+  if (size() != source.size()) {
+    throw std::invalid_argument("Vector::addVector: size mismatch");
+  }
   for (int64_t i = 0; i < size(); i++) {
     data_[i] += s * source.data_[i];
   }
 }
 
 void Vector::addRow(const Matrix& A, int64_t i, real a) {
-  assert(i >= 0);
-  assert(i < A.size(0));
-  assert(size() == A.size(1));
+  if (i < 0 || i >= A.size(0)) {
+    throw std::invalid_argument("Vector::addRow: row index out of range");
+  }
+  if (size() != A.size(1)) {
+    throw std::invalid_argument("Vector::addRow: size mismatch");
+  }
   A.addRowToVector(*this, i, a);
 }
 
 void Vector::addRow(const Matrix& A, int64_t i) {
-  assert(i >= 0);
-  assert(i < A.size(0));
-  assert(size() == A.size(1));
+  if (i < 0 || i >= A.size(0)) {
+    throw std::invalid_argument("Vector::addRow: row index out of range");
+  }
+  if (size() != A.size(1)) {
+    throw std::invalid_argument("Vector::addRow: size mismatch");
+  }
   A.addRowToVector(*this, i);
 }
 
 void Vector::mul(const Matrix& A, const Vector& vec) {
-  assert(A.size(0) == size());
-  assert(A.size(1) == vec.size());
+  if (A.size(0) != size() || A.size(1) != vec.size()) {
+    throw std::invalid_argument("Vector::mul: size mismatch");
+  }
   for (int64_t i = 0; i < size(); i++) {
     data_[i] = A.dotRow(vec, i);
   }

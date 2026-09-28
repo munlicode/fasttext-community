@@ -798,6 +798,13 @@ namespace fasttext
     {
       trainException_ = std::current_exception();
     }
+    catch (const std::exception &)
+    {
+      // Any other exception (e.g. a size mismatch thrown by Vector::addRow)
+      // must not escape a std::thread's entry function: that calls
+      // std::terminate() instead of surfacing as a Python exception.
+      trainException_ = std::current_exception();
+    }
     if (threadId == 0)
       loss_ = state.getLoss();
     ifs.close();
