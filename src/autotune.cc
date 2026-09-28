@@ -16,6 +16,10 @@
 #include <random>
 #include <thread>
 
+#ifndef _WIN32
+#include <signal.h>
+#endif
+
 #define LOG_VAL(name, val)                        \
   if (autotuneArgs.verbose > 2) {                 \
     std::cout << #name " = " << val << std::endl; \
@@ -36,6 +40,39 @@ std::function<void()> interruptSignalHandler;
 void signalHandler(int signal) {
   if (signal == SIGINT) {
     interruptSignalHandler();
+  }
+}
+
+// SIGINT disposition replaced by installSigint().
+// POSIX keeps the full sigaction: restoring with std::signal() adds
+// SA_RESTART, so Python's Ctrl-C would no longer interrupt a blocking read.
+#ifdef _WIN32
+void (*previousSigint)(int);
+#else
+struct sigaction previousSigint;
+#endif
+std::atomic<bool> sigintInstalled(false);
+
+void installSigint() {
+#ifdef _WIN32
+  previousSigint = std::signal(SIGINT, signalHandler);
+#else
+  struct sigaction action = {};
+  action.sa_handler = signalHandler;
+  action.sa_flags = SA_RESTART; // as std::signal(), for autotune's own I/O
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGINT, &action, &previousSigint);
+#endif
+  sigintInstalled = true;
+}
+
+void restoreSigint() {
+  if (sigintInstalled.exchange(false)) {
+#ifdef _WIN32
+    std::signal(SIGINT, previousSigint);
+#else
+    sigaction(SIGINT, &previousSigint, nullptr);
+#endif
   }
 }
 
@@ -216,6 +253,9 @@ Autotune::Autotune(const std::shared_ptr<FastText>& fastText)
       timer_() {}
 
 Autotune::~Autotune() noexcept {
+  // Restore SIGINT: the installed handler calls into this object.
+  restoreSigint();
+  interruptSignalHandler = nullptr;
   // An exception leaving train() skips its timer join, and destroying a
   // joinable std::thread calls std::terminate().
   if (timer_.joinable()) {
@@ -275,12 +315,12 @@ void Autotune::startTimer(const Args& args) {
   trials_ = 0;
   continueTraining_ = true;
 
-  auto previousSignalHandler = std::signal(SIGINT, signalHandler);
-  interruptSignalHandler = [&]() {
-    std::signal(SIGINT, previousSignalHandler);
+  interruptSignalHandler = [this]() {
+    restoreSigint();
     std::cerr << std::endl << "Aborting autotune..." << std::endl;
     abort();
   };
+  installSigint();
 }
 
 double Autotune::getMetricScore(
