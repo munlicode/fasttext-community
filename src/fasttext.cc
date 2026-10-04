@@ -294,7 +294,6 @@ namespace fasttext
 
   void FastText::loadModel(std::istream &in)
   {
-    quant_ = false;
     args_ = std::make_shared<Args>();
     input_ = std::make_shared<DenseMatrix>();
     output_ = std::make_shared<DenseMatrix>();
@@ -308,9 +307,9 @@ namespace fasttext
 
     bool quant_input;
     in.read((char *)&quant_input, sizeof(bool));
+    quant_ = quant_input;
     if (quant_input)
     {
-      quant_ = true;
       input_ = std::make_shared<QuantMatrix>();
     }
     input_->load(in);
