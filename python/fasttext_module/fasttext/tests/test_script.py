@@ -303,6 +303,20 @@ def test_get_subwords(kwargs):
         model.get_subwords(w)
 
 
+def test_get_subword_id_without_buckets_raises_error():
+    """
+    Verifies that `get_subword_id` raises a ValueError instead of crashing
+    (integer division by zero) when the model has no subword buckets, which
+    is the case for a default supervised model.
+    """
+    model = build_supervised_model(
+        get_random_data(1000, max_vocab_size=1000), {"thread": 10}
+    )
+    assert model.f.getArgs().bucket == 0
+    with pytest.raises(ValueError, match="bucket"):
+        model.get_subword_id("abc")
+
+
 def test_tokenize():
     """
     Tests the static `fasttext.tokenize` function.
