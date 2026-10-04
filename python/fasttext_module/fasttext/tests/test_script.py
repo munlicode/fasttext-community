@@ -1,3 +1,6 @@
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: MIT
+
 # Copyright (c) 2017-present, Facebook, Inc.
 # All rights reserved.
 #
@@ -464,3 +467,24 @@ def test_newline_in_string_raises_error(kwargs):
                 method_to_test(sentence_with_newline, k=5)
             else:
                 method_to_test(sentence_with_newline)
+
+
+@pytest.mark.parametrize(
+    "build_model, kwargs",
+    [
+        pytest.param(build_unsupervised_model, {"bucket": 0}, id="unsup_subwords"),
+        pytest.param(
+            build_supervised_model,
+            {"bucket": 0, "wordNgrams": 2},
+            id="sup_word_ngrams",
+        ),
+    ],
+)
+def test_train_with_zero_bucket_raises_error(build_model, kwargs):
+    """
+    Verifies that training with `bucket=0` while subwords or word n-grams
+    are enabled raises a ValueError instead of crashing (integer division
+    by zero).
+    """
+    with pytest.raises(ValueError, match="bucket"):
+        build_model(get_random_data(100), kwargs)
