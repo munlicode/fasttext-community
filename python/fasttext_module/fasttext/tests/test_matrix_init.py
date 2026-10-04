@@ -5,9 +5,10 @@
 
 """Regression test: full initialization of the input matrix.
 
-With thread < 10, DenseMatrix::uniform used to fill only thread/10 of the
-input matrix and leave the rest uninitialized, so training could raise
-"Encountered NaN" or give results that varied between processes.
+With thread <= 10, DenseMatrix::uniform used to leave part of the input
+matrix uninitialized (for thread=10, the remainder after 10 equal blocks), so
+training could raise "Encountered NaN" or give results that varied between
+processes.
 """
 
 import json
@@ -29,24 +30,26 @@ for _ in range(100):
     line = [rnd.choice(words) for _ in range(rnd.randint(1, 20))]
     f.write("__label__%s %s\n" % (line[0], " ".join(line)))
 f.close()
-result = {}
+result = {"bad_init": {}, "init_hash": {}}
 try:
-    dim = 50
-    # lr=0 leaves the input matrix as initialized.
-    m = fasttext.train_supervised(
-        f.name, thread=1, epoch=1, lr=0.0, dim=dim, minCount=1, verbose=0
-    )
-    M = m.get_input_matrix()
-    # Check 1: uninitialized memory shows up as NaN/inf, zero or out of range.
-    bad = ~np.isfinite(M) | (np.abs(M) > 1.0 / dim) | (M == 0)
-    result["bad_init"] = int(bad.sum())
-    # Check 2: any RuntimeError, from either call, is recorded by the except.
-    m = fasttext.train_supervised(
-        f.name, thread=1, epoch=5, minCount=1, verbose=0
-    )
-    # Check 3: hash of the trained matrix.
-    result["hash"] = hashlib.sha256(m.get_input_matrix().tobytes()).hexdigest()
-except RuntimeError as e:
+    dim = 13  # 101 rows (100 words + </s>) x 13 = 1313: leaves a tail block
+    bound = np.float32(1.0 / dim)  # values are float32
+    # 11 blocks (10 + tail). thread=1: sequential; 2, 10: striding;
+    # 11: one block per worker; 12: more threads than blocks.
+    # Keep thread=1 first: freed matrix memory is reused by the next run.
+    for thread in (1, 2, 10, 11, 12):
+        # lr=0 leaves the input matrix as initialized.
+        m = fasttext.train_supervised(
+            f.name, thread=thread, epoch=1, lr=0.0, dim=dim, minCount=1, verbose=0
+        )
+        M = m.get_input_matrix()
+        result["tail"] = int(M.size % 10)
+        # Check 1: uninitialized memory shows up as NaN/inf, zero or out of range.
+        bad = ~np.isfinite(M) | (np.abs(M) > bound) | (M == 0)
+        result["bad_init"][thread] = int(bad.sum())
+        # Check 2: same matrix for every thread count (and every process).
+        result["init_hash"][thread] = hashlib.sha256(M.tobytes()).hexdigest()
+except RuntimeError as e:  # e.g. "Encountered NaN" from uninitialized values
     result["error"] = str(e)
 finally:
     os.unlink(f.name)
@@ -70,20 +73,20 @@ def _run_child():
     return json.loads(out.strip().splitlines()[-1])
 
 
-def test_single_thread_init_is_complete_and_deterministic():
-    """Single-thread training initializes the whole input matrix.
+def test_init_is_complete_and_deterministic():
+    """Training initializes the whole input matrix, for any thread count.
 
-    Trains with thread=1 in several fresh processes and checks that:
+    Runs fresh processes and checks that:
     1. every initial value is finite, non-zero and in [-1/dim, 1/dim]
-    2. training raises no RuntimeError, such as "Encountered NaN"
-    3. the trained input matrix is identical across processes
+    2. the initial matrix is identical for every thread count and process
     """
     # Uninitialized memory contents vary per process, so use fresh ones.
-    results = [_run_child() for _ in range(5)]
+    results = [_run_child() for _ in range(3)]
     for r in results:
-        # Check 2 first: an errored run has no "bad_init".
         assert "error" not in r, r["error"]
+        assert r["tail"] != 0  # the tail block is exercised
         # Check 1
-        assert r["bad_init"] == 0
-    # Check 3
-    assert len({r["hash"] for r in results}) == 1
+        assert set(r["bad_init"].values()) == {0}, r["bad_init"]
+    # Check 2
+    hashes = {h for r in results for h in r["init_hash"].values()}
+    assert len(hashes) == 1, [r["init_hash"] for r in results]

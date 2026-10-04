@@ -45,7 +45,9 @@ namespace fasttext
 
   void DenseMatrix::uniformThread(real a, int block, int32_t seed)
   {
-    std::minstd_rand rng(block + seed);
+    // Add as unsigned: block + seed in int overflows near INT32_MAX (UB).
+    using Seed = std::minstd_rand::result_type;
+    std::minstd_rand rng(static_cast<Seed>(seed) + block);
     std::uniform_real_distribution<> uniform(-a, a);
     int64_t blockSize = (m_ * n_) / kUniformBlocks;
     int64_t begin = blockSize * block;
@@ -66,12 +68,15 @@ namespace fasttext
       std::vector<std::thread> threads;
       for (unsigned int i = 0; i < numWorkers; i++)
       {
-        threads.push_back(std::thread([=]()
-                                      {
+        // Worker i fills blocks i, i + numWorkers, i + 2 * numWorkers, ...
+        auto work = [=]()
+        {
           for (unsigned int b = i; b < numBlocks; b += numWorkers)
           {
             uniformThread(a, b, seed);
-          } }));
+          }
+        };
+        threads.push_back(std::thread(work));
       }
       for (size_t i = 0; i < threads.size(); i++)
       {
