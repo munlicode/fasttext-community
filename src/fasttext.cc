@@ -109,6 +109,10 @@ namespace fasttext
 
   int32_t FastText::getSubwordId(const std::string &subword) const
   {
+    if (args_->bucket <= 0)
+    {
+      throw std::invalid_argument("model has no subword buckets (bucket=0)");
+    }
     int32_t h = dict_->hash(subword) % args_->bucket;
     return dict_->nwords() + h;
   }
@@ -144,6 +148,10 @@ namespace fasttext
   }
   void FastText::getSubwordVector(Vector &vec, const std::string &subword) const
   {
+    if (args_->bucket <= 0)
+    {
+      throw std::invalid_argument("model has no subword buckets (bucket=0)");
+    }
     vec.zero();
     int32_t h = dict_->hash(subword) % args_->bucket;
     h = h + dict_->nwords();
@@ -878,6 +886,12 @@ namespace fasttext
 
   void FastText::train(const Args &args, const TrainCallback &callback)
   {
+    if (args.bucket <= 0 && (args.maxn > 0 || args.wordNgrams > 1))
+    {
+      throw std::invalid_argument(
+          "bucket must be > 0 when using subwords (maxn > 0) "
+          "or word n-grams (wordNgrams > 1)");
+    }
     args_ = std::make_shared<Args>(args);
     dict_ = std::make_shared<Dictionary>(args_);
     if (args_->input == "-")
