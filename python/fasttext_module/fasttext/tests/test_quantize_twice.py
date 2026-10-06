@@ -3,7 +3,8 @@
 # SPDX-FileType: SOURCE
 # SPDX-License-Identifier: MIT
 
-"""quantize() must raise on a quantized model, and only on one."""
+"""quantize() must raise on a quantized model, and leave the model unchanged
+when it fails."""
 
 import pytest
 
