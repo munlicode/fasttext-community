@@ -81,7 +81,7 @@ def test_init_is_complete_and_deterministic():
     2. the initial matrix is identical for every thread count and process
     """
     # Uninitialized memory contents vary per process, so use fresh ones.
-    results = [_run_child() for _ in range(3)]
+    results = [_run_child() for _ in range(5)]
     for r in results:
         assert "error" not in r, r["error"]
         assert r["tail"] != 0  # the tail block is exercised
