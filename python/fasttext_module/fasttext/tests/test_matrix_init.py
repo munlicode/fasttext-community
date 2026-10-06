@@ -30,29 +30,38 @@ for _ in range(100):
     line = [rnd.choice(words) for _ in range(rnd.randint(1, 20))]
     f.write("__label__%s %s\n" % (line[0], " ".join(line)))
 f.close()
+dim = 13  # 101 rows (100 words + </s>) x 13 = 1313: leaves a tail block
+# Pretrained vector for one word; in range, so Check 1 still applies.
+vec = tempfile.NamedTemporaryFile("w", suffix=".vec", delete=False)
+vec.write("1 %d\nw0%s\n" % (dim, " 0.01" * dim))
+vec.close()
 result = {"bad_init": {}, "init_hash": {}}
 try:
-    dim = 13  # 101 rows (100 words + </s>) x 13 = 1313: leaves a tail block
     bound = np.float32(1.0 / dim)  # values are float32
     # 11 blocks (10 + tail). thread=1: sequential; 2, 10: striding;
     # 11: one block per worker; 12: more threads than blocks.
     # Keep thread=1 first: freed matrix memory is reused by the next run.
-    for thread in (1, 2, 10, 11, 12):
+    # Random init, then pretrained init (pv): both call uniform().
+    runs = [(t, pv) for pv in ("", vec.name) for t in (1, 2, 10, 11, 12)]
+    for thread, pv in runs:
         # lr=0 leaves the input matrix as initialized.
         m = fasttext.train_supervised(
-            f.name, thread=thread, epoch=1, lr=0.0, dim=dim, minCount=1, verbose=0
+            f.name, thread=thread, epoch=1, lr=0.0, dim=dim, minCount=1, verbose=0,
+            pretrainedVectors=pv,
         )
+        key = ("p%d" if pv else "%d") % thread
         M = m.get_input_matrix()
         result["tail"] = int(M.size % 10)
         # Check 1: uninitialized memory shows up as NaN/inf, zero or out of range.
         bad = ~np.isfinite(M) | (np.abs(M) > bound) | (M == 0)
-        result["bad_init"][thread] = int(bad.sum())
+        result["bad_init"][key] = int(bad.sum())
         # Check 2: same matrix for every thread count (and every process).
-        result["init_hash"][thread] = hashlib.sha256(M.tobytes()).hexdigest()
+        result["init_hash"][key] = hashlib.sha256(M.tobytes()).hexdigest()
 except RuntimeError as e:  # e.g. "Encountered NaN" from uninitialized values
     result["error"] = str(e)
 finally:
     os.unlink(f.name)
+    os.unlink(vec.name)
 print(json.dumps(result))
 """
 
@@ -87,6 +96,6 @@ def test_init_is_complete_and_deterministic():
         assert r["tail"] != 0  # the tail block is exercised
         # Check 1
         assert set(r["bad_init"].values()) == {0}, r["bad_init"]
-    # Check 2
+    # Check 2: one hash for random init, one for pretrained
     hashes = {h for r in results for h in r["init_hash"].values()}
-    assert len(hashes) == 1, [r["init_hash"] for r in results]
+    assert len(hashes) == 2, [r["init_hash"] for r in results]
