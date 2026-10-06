@@ -752,17 +752,18 @@ namespace fasttext
 
   void FastText::trainThread(int32_t threadId, const TrainCallback &callback)
   {
-    std::ifstream ifs(args_->input);
-    utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
-
-    Model::State state(args_->dim, output_->size(0), threadId + args_->seed);
-
-    const int64_t ntokens = dict_->ntokens();
-    int64_t localTokenCount = 0;
-    std::vector<int32_t> line, labels;
-    std::uint64_t callbackCounter = 0;
+    // Setup is inside the try too: e.g. bad_alloc from Model::State.
     try
     {
+      std::ifstream ifs(args_->input);
+      utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
+
+      Model::State state(args_->dim, output_->size(0), threadId + args_->seed);
+
+      const int64_t ntokens = dict_->ntokens();
+      int64_t localTokenCount = 0;
+      std::vector<int32_t> line, labels;
+      std::uint64_t callbackCounter = 0;
       while (keepTraining(ntokens))
       {
         real progress = real(tokenCount_) / (args_->epoch * ntokens);
@@ -801,6 +802,8 @@ namespace fasttext
           }
         }
       }
+      if (threadId == 0)
+        loss_ = state.getLoss();
     }
     catch (const std::exception &)
     {
@@ -811,9 +814,6 @@ namespace fasttext
         trainException_ = std::current_exception();
       }
     }
-    if (threadId == 0)
-      loss_ = state.getLoss();
-    ifs.close();
   }
 
   std::shared_ptr<Matrix> FastText::getInputMatrixFromFile(
