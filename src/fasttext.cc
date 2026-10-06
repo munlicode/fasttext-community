@@ -398,6 +398,20 @@ namespace fasttext
       throw std::invalid_argument(
           "For now we only support quantization of supervised models");
     }
+    // Check sizes before changing anything: failing later leaves a
+    // half-quantized model (pruned dict, or quantized input only).
+    const int64_t minRows = 256; // ProductQuantizer::ksub_
+    int64_t inputRows = input_->size(0);
+    if (qargs.cutoff > 0 && qargs.cutoff < static_cast<size_t>(inputRows))
+    {
+      inputRows = qargs.cutoff;
+    }
+    if (inputRows < minRows || (qargs.qout && output_->size(0) < minRows))
+    {
+      throw std::invalid_argument(
+          "Matrix too small for quantization, must have at least " +
+          std::to_string(minRows) + " rows");
+    }
     args_->input = qargs.input;
     args_->qout = qargs.qout;
     args_->output = qargs.output;
