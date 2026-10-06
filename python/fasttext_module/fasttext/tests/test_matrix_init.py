@@ -96,6 +96,9 @@ def test_init_is_complete_and_deterministic():
         assert r["tail"] != 0  # the tail block is exercised
         # Check 1
         assert set(r["bad_init"].values()) == {0}, r["bad_init"]
-    # Check 2: one hash for random init, one for pretrained
-    hashes = {h for r in results for h in r["init_hash"].values()}
-    assert len(hashes) == 2, [r["init_hash"] for r in results]
+    # Check 2: per init path (random, pretrained), one hash for all runs
+    for p in (False, True):
+        runs = [h for r in results for k, h in r["init_hash"].items()]
+        hashes = {h for r in results for k, h in r["init_hash"].items()
+                  if k.startswith("p") == p}
+        assert len(hashes) == 1, [r["init_hash"] for r in results]
