@@ -120,7 +120,17 @@ AutotuneStrategy::AutotuneStrategy(
       bestNonzeroBucket_(2000000),
       originalBucket_(originalArgs.bucket) {
   minnChoices_ = {0, 2, 3};
-  updateBest(originalArgs);
+  Args args = originalArgs;
+  // A manual bucket=0 means no n-gram buckets: start without n-grams too.
+  if (args.isManual("bucket") && args.bucket == 0) {
+    if (!args.isManual("wordNgrams")) {
+      args.wordNgrams = 1;
+    }
+    if (!args.isManual("maxn")) {
+      args.maxn = 0;
+    }
+  }
+  updateBest(args);
 }
 
 Args AutotuneStrategy::ask(double elapsed) {

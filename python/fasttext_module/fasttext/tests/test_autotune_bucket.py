@@ -6,6 +6,7 @@
 """Autotune must respect a manually set bucket."""
 
 import fasttext
+import fasttext_pybind
 from fasttext import FastText
 
 from .helpers import get_random_data
@@ -43,3 +44,25 @@ def test_autotune_with_manual_bucket_zero(tmp_path):
     )
     args = model.f.getArgs()
     assert (args.bucket, args.wordNgrams, args.maxn) == (0, 1, 0)
+
+
+def test_unsupervised_autotune_with_manual_bucket_zero(tmp_path):
+    """Used to terminate: trial 1 kept the default subwords (CLI-only path)."""
+    path = tmp_path / "train.txt"
+    path.write_text("".join(f"{line}\n" for line in get_random_data(3000)))
+    # train_unsupervised() takes no autotune args; the CLI reaches this.
+    args = dict(
+        FastText.unsupervised_default,
+        input=str(path),
+        autotuneValidationFile=str(path),
+        autotuneDuration=3,
+        bucket=0,
+        lr=0.05,  # a sampled lr can diverge (NaN) in the final retrain
+        thread=12,  # thread <= 10 leaves the input matrix partly uninitialized
+        verbose=0,
+    )
+    a = FastText._build_args(args, {"bucket", "lr"})
+    model = FastText._FastText(args=a)
+    fasttext_pybind.train(model.f, a)
+    got = model.f.getArgs()
+    assert (got.bucket, got.wordNgrams, got.maxn) == (0, 1, 0)
