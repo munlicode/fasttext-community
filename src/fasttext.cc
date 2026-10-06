@@ -747,7 +747,7 @@ namespace fasttext
 
   bool FastText::keepTraining(const int64_t ntokens) const
   {
-    return tokenCount_ < args_->epoch * ntokens && !trainException_;
+    return tokenCount_ < args_->epoch * ntokens && !stopTraining_;
   }
 
   void FastText::trainThread(int32_t threadId, const TrainCallback &callback)
@@ -802,15 +802,14 @@ namespace fasttext
         }
       }
     }
-    catch (DenseMatrix::EncounteredNaNError &)
-    {
-      trainException_ = std::current_exception();
-    }
     catch (const std::exception &)
     {
-      // E.g. a Vector size check. An exception escaping a std::thread
-      // calls std::terminate(); store it so startThreads() rethrows it.
-      trainException_ = std::current_exception();
+      // E.g. NaN or a Vector size check: escaping a std::thread would call
+      // std::terminate(). Threads may throw together; the first one stores it.
+      if (!stopTraining_.exchange(true))
+      {
+        trainException_ = std::current_exception();
+      }
     }
     if (threadId == 0)
       loss_ = state.getLoss();
@@ -932,14 +931,8 @@ namespace fasttext
 
   void FastText::abort()
   {
-    try
-    {
-      throw AbortError();
-    }
-    catch (AbortError &)
-    {
-      trainException_ = std::current_exception();
-    }
+    // Called from other threads (autotune timer, SIGINT): only set the flag.
+    stopTraining_ = true;
   }
 
   void FastText::startThreads(const TrainCallback &callback)
@@ -948,6 +941,7 @@ namespace fasttext
     tokenCount_ = 0;
     loss_ = -1;
     trainException_ = nullptr;
+    stopTraining_ = false;
     std::vector<std::thread> threads;
     if (args_->thread > 1)
     {
@@ -983,6 +977,10 @@ namespace fasttext
       std::exception_ptr exception = trainException_;
       trainException_ = nullptr;
       std::rethrow_exception(exception);
+    }
+    if (stopTraining_)
+    {
+      throw AbortError();
     }
     if (args_->verbose > 0)
     {
