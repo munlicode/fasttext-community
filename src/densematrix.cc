@@ -8,6 +8,7 @@
 
 #include "densematrix.h"
 
+#include <algorithm>
 #include <random>
 #include <stdexcept>
 #include <thread>
@@ -37,14 +38,21 @@ namespace fasttext
     std::fill(data_.begin(), data_.end(), 0.0);
   }
 
+  // The matrix is split into kUniformBlocks equal blocks plus a tail block
+  // (index kUniformBlocks) holding the remainder. Each block has its own RNG
+  // seeded with block + seed, so the result does not depend on thread count.
+  static constexpr int kUniformBlocks = 10;
+
   void DenseMatrix::uniformThread(real a, int block, int32_t seed)
   {
-    std::minstd_rand rng(block + seed);
+    // Add as unsigned: block + seed in int overflows near INT32_MAX (UB).
+    using Seed = std::minstd_rand::result_type;
+    std::minstd_rand rng(static_cast<Seed>(seed) + block);
     std::uniform_real_distribution<> uniform(-a, a);
-    int64_t blockSize = (m_ * n_) / 10;
-    for (int64_t i = blockSize * block;
-         i < (m_ * n_) && i < blockSize * (block + 1);
-         i++)
+    int64_t blockSize = (m_ * n_) / kUniformBlocks;
+    int64_t begin = blockSize * block;
+    int64_t end = block < kUniformBlocks ? begin + blockSize : m_ * n_;
+    for (int64_t i = begin; i < end; i++)
     {
       data_[i] = uniform(rng);
     }
@@ -52,13 +60,23 @@ namespace fasttext
 
   void DenseMatrix::uniform(real a, unsigned int thread, int32_t seed)
   {
+    // data_ is not zero-initialized, so every block must be filled.
+    const unsigned int numBlocks = kUniformBlocks + 1;
     if (thread > 1)
     {
+      unsigned int numWorkers = std::min(thread, numBlocks);
       std::vector<std::thread> threads;
-      for (unsigned int i = 0; i < thread; i++)
+      for (unsigned int i = 0; i < numWorkers; i++)
       {
-        threads.push_back(std::thread([=]()
-                                      { uniformThread(a, i, seed); }));
+        // Worker i fills blocks i, i + numWorkers, i + 2 * numWorkers, ...
+        auto work = [=]()
+        {
+          for (unsigned int b = i; b < numBlocks; b += numWorkers)
+          {
+            uniformThread(a, b, seed);
+          }
+        };
+        threads.push_back(std::thread(work));
       }
       for (size_t i = 0; i < threads.size(); i++)
       {
@@ -68,7 +86,10 @@ namespace fasttext
     else
     {
       // webassembly can't instantiate `std::thread`
-      uniformThread(a, 0, seed);
+      for (unsigned int b = 0; b < numBlocks; b++)
+      {
+        uniformThread(a, b, seed);
+      }
     }
   }
 
