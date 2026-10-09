@@ -86,6 +86,7 @@ namespace fasttext
 
     input_ = std::dynamic_pointer_cast<Matrix>(inputMatrix);
     output_ = std::dynamic_pointer_cast<Matrix>(outputMatrix);
+    quant_ = false;
     wordVectors_.reset();
     args_->dim = input_->size(1);
 
@@ -306,9 +307,9 @@ namespace fasttext
 
     bool quant_input;
     in.read((char *)&quant_input, sizeof(bool));
+    quant_ = quant_input;
     if (quant_input)
     {
-      quant_ = true;
       input_ = std::make_shared<QuantMatrix>();
     }
     input_->load(in);
@@ -386,10 +387,30 @@ namespace fasttext
 
   void FastText::quantize(const Args &qargs, const TrainCallback &callback)
   {
+    if (quant_)
+    {
+      throw std::invalid_argument(
+          "Model is already quantized. "
+          "Quantize the original (non-quantized) model instead.");
+    }
     if (args_->model != model_name::sup)
     {
       throw std::invalid_argument(
           "For now we only support quantization of supervised models");
+    }
+    // Check sizes before changing anything: failing later leaves a
+    // half-quantized model (pruned dict, or quantized input only).
+    const int64_t minRows = 256; // ProductQuantizer::ksub_
+    int64_t inputRows = input_->size(0);
+    if (qargs.cutoff > 0 && qargs.cutoff < static_cast<size_t>(inputRows))
+    {
+      inputRows = qargs.cutoff;
+    }
+    if (inputRows < minRows || (qargs.qout && output_->size(0) < minRows))
+    {
+      throw std::invalid_argument(
+          "Matrix too small for quantization, must have at least " +
+          std::to_string(minRows) + " rows");
     }
     args_->input = qargs.input;
     args_->qout = qargs.qout;
