@@ -429,7 +429,13 @@ def _build_args(args, manually_set_args):
             a.setManual(k)
     a.output = ""  # User should use save_model
     a.saveOutput = 0  # Never use this
-    if a.wordNgrams <= 1 and a.maxn == 0:
+    # Autotune reuses a manual bucket for the n-gram trials it samples.
+    keep_bucket = (
+        bool(a.autotuneValidationFile)
+        and "bucket" in manually_set_args
+        and a.bucket > 0
+    )
+    if a.wordNgrams <= 1 and a.maxn == 0 and not keep_bucket:
         a.bucket = 0
     return a
 
