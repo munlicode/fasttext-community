@@ -12,8 +12,7 @@ from .helpers import build_supervised_model, get_random_data
 
 def test_meter_returns_arrays(tmp_path):
     data = get_random_data(100)
-    # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
-    model = build_supervised_model(data, {"thread": 12})
+    model = build_supervised_model(data, {})
     path = tmp_path / "test.txt"
     path.write_text("".join(f"__label__{line}\n" for line in data))
     meter = model.get_meter(str(path))
