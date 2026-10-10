@@ -58,6 +58,7 @@ def test_unsupervised_autotune_with_manual_bucket_zero(tmp_path):
         autotuneDuration=3,
         bucket=0,
         lr=0.05,  # a sampled lr can diverge (NaN) in the final retrain
+        thread=12,  # thread <= 10 leaves the input matrix partly uninitialized
         verbose=0,
     )
     a = FastText._build_args(args, {"bucket", "lr"})
