@@ -14,8 +14,8 @@ from .helpers import build_supervised_model, get_random_data
 
 
 def _model():
-    data = get_random_data(3000, max_vocab_size=600)
     # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
+    data = get_random_data(3000, max_vocab_size=600)
     return build_supervised_model(data, {"thread": 12, "dim": 16, "verbose": 0})
 
 

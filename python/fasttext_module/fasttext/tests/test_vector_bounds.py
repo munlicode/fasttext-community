@@ -13,8 +13,9 @@ from .helpers import build_supervised_model, get_random_data
 
 
 def _model(data=None):
+    # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
     data = data or get_random_data(300, max_vocab_size=100)
-    return build_supervised_model(data, {"dim": 16, "verbose": 0})
+    return build_supervised_model(data, {"thread": 12, "dim": 16, "verbose": 0})
 
 
 def _shrink_output_dim(model):
