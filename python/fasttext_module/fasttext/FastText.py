@@ -363,6 +363,8 @@ class _FastText:
         self.f.quantize(
             input, qout, cutoff, retrain, epoch, lr, thread, verbose, dsub, qnorm
         )
+        # cutoff prunes the dictionary
+        self._words = None
 
     def set_matrices(self, input_matrix, output_matrix):
         """
