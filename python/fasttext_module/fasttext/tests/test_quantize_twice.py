@@ -15,7 +15,8 @@ from .helpers import build_supervised_model, get_random_data
 
 def _model():
     data = get_random_data(3000, max_vocab_size=600)
-    return build_supervised_model(data, {"dim": 16, "verbose": 0})
+    # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
+    return build_supervised_model(data, {"thread": 12, "dim": 16, "verbose": 0})
 
 
 def test_quantize_twice_raises():
@@ -42,7 +43,7 @@ def test_failed_quantize_leaves_model_unchanged(tmp_path, kwargs):
     path = tmp_path / "train.txt"
     # 3 labels: too few output rows for qout.
     path.write_text("".join(f"__label__{i % 3} {x}\n" for i, x in enumerate(data)))
-    model = fasttext.train_supervised(str(path), dim=16, verbose=0)
+    model = fasttext.train_supervised(str(path), thread=12, dim=16, verbose=0)
     nwords = len(model.get_words())
     with pytest.raises(ValueError, match="too small"):
         model.quantize(**kwargs)
