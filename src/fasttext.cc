@@ -86,6 +86,7 @@ namespace fasttext
 
     input_ = std::dynamic_pointer_cast<Matrix>(inputMatrix);
     output_ = std::dynamic_pointer_cast<Matrix>(outputMatrix);
+    quant_ = false;
     wordVectors_.reset();
     args_->dim = input_->size(1);
 
@@ -307,9 +308,9 @@ namespace fasttext
 
     bool quant_input;
     in.read((char *)&quant_input, sizeof(bool));
+    quant_ = quant_input;
     if (quant_input)
     {
-      quant_ = true;
       input_ = std::make_shared<QuantMatrix>();
     }
     input_->load(in);
@@ -387,10 +388,30 @@ namespace fasttext
 
   void FastText::quantize(const Args &qargs, const TrainCallback &callback)
   {
+    if (quant_)
+    {
+      throw std::invalid_argument(
+          "Model is already quantized. "
+          "Quantize the original (non-quantized) model instead.");
+    }
     if (args_->model != model_name::sup)
     {
       throw std::invalid_argument(
           "For now we only support quantization of supervised models");
+    }
+    // Check sizes before changing anything: failing later leaves a
+    // half-quantized model (pruned dict, or quantized input only).
+    const int64_t minRows = 256; // ProductQuantizer::ksub_
+    int64_t inputRows = input_->size(0);
+    if (qargs.cutoff > 0 && qargs.cutoff < static_cast<size_t>(inputRows))
+    {
+      inputRows = qargs.cutoff;
+    }
+    if (inputRows < minRows || (qargs.qout && output_->size(0) < minRows))
+    {
+      throw std::invalid_argument(
+          "Matrix too small for quantization, must have at least " +
+          std::to_string(minRows) + " rows");
     }
     args_->input = qargs.input;
     args_->qout = qargs.qout;
@@ -752,22 +773,23 @@ namespace fasttext
 
   bool FastText::keepTraining(const int64_t ntokens) const
   {
-    return tokenCount_ < args_->epoch * ntokens && !trainException_;
+    return tokenCount_ < args_->epoch * ntokens && !stopTraining_;
   }
 
   void FastText::trainThread(int32_t threadId, const TrainCallback &callback)
   {
-    std::ifstream ifs(args_->input);
-    utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
-
-    Model::State state(args_->dim, output_->size(0), threadId + args_->seed);
-
-    const int64_t ntokens = dict_->ntokens();
-    int64_t localTokenCount = 0;
-    std::vector<int32_t> line, labels;
-    std::uint64_t callbackCounter = 0;
+    // Setup is inside the try too: e.g. bad_alloc from Model::State.
     try
     {
+      std::ifstream ifs(args_->input);
+      utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
+
+      Model::State state(args_->dim, output_->size(0), threadId + args_->seed);
+
+      const int64_t ntokens = dict_->ntokens();
+      int64_t localTokenCount = 0;
+      std::vector<int32_t> line, labels;
+      std::uint64_t callbackCounter = 0;
       while (keepTraining(ntokens))
       {
         real progress = real(tokenCount_) / (args_->epoch * ntokens);
@@ -806,14 +828,18 @@ namespace fasttext
           }
         }
       }
+      if (threadId == 0)
+        loss_ = state.getLoss();
     }
-    catch (DenseMatrix::EncounteredNaNError &)
+    catch (const std::exception &)
     {
-      trainException_ = std::current_exception();
+      // E.g. NaN or a Vector size check: escaping a std::thread would call
+      // std::terminate(). Threads may throw together; the first one stores it.
+      if (!stopTraining_.exchange(true))
+      {
+        trainException_ = std::current_exception();
+      }
     }
-    if (threadId == 0)
-      loss_ = state.getLoss();
-    ifs.close();
   }
 
   std::shared_ptr<Matrix> FastText::getInputMatrixFromFile(
@@ -932,14 +958,8 @@ namespace fasttext
 
   void FastText::abort()
   {
-    try
-    {
-      throw AbortError();
-    }
-    catch (AbortError &)
-    {
-      trainException_ = std::current_exception();
-    }
+    // Called from other threads (autotune timer, SIGINT): only set the flag.
+    stopTraining_ = true;
   }
 
   void FastText::startThreads(const TrainCallback &callback)
@@ -948,6 +968,7 @@ namespace fasttext
     tokenCount_ = 0;
     loss_ = -1;
     trainException_ = nullptr;
+    stopTraining_ = false;
     std::vector<std::thread> threads;
     if (args_->thread > 1)
     {
@@ -983,6 +1004,10 @@ namespace fasttext
       std::exception_ptr exception = trainException_;
       trainException_ = nullptr;
       std::rethrow_exception(exception);
+    }
+    if (stopTraining_)
+    {
+      throw AbortError();
     }
     if (args_->verbose > 0)
     {
