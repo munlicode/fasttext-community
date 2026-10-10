@@ -120,7 +120,17 @@ AutotuneStrategy::AutotuneStrategy(
       bestNonzeroBucket_(2000000),
       originalBucket_(originalArgs.bucket) {
   minnChoices_ = {0, 2, 3};
-  updateBest(originalArgs);
+  Args args = originalArgs;
+  // A manual bucket=0 means no n-gram buckets: start without n-grams too.
+  if (args.isManual("bucket") && args.bucket == 0) {
+    if (!args.isManual("wordNgrams")) {
+      args.wordNgrams = 1;
+    }
+    if (!args.isManual("maxn")) {
+      args.maxn = 0;
+    }
+  }
+  updateBest(args);
 }
 
 Args AutotuneStrategy::ask(double elapsed) {
@@ -132,6 +142,8 @@ Args AutotuneStrategy::ask(double elapsed) {
   }
 
   Args args = bestArgs_;
+  // A manual bucket=0 means no n-gram buckets: don't sample n-grams.
+  const bool noBuckets = args.isManual("bucket") && originalBucket_ == 0;
 
   if (!args.isManual("epoch")) {
     args.epoch = updateArgGauss(args.epoch, 1, 100, 2.8, 2.5, t, false, rng_);
@@ -142,7 +154,7 @@ Args AutotuneStrategy::ask(double elapsed) {
   if (!args.isManual("dim")) {
     args.dim = updateArgGauss(args.dim, 1, 1000, 1.4, 0.3, t, false, rng_);
   }
-  if (!args.isManual("wordNgrams")) {
+  if (!args.isManual("wordNgrams") && !noBuckets) {
     args.wordNgrams =
         updateArgGauss(args.wordNgrams, 1, 5, 4.3, 2.4, t, true, rng_);
   }
@@ -151,7 +163,7 @@ Args AutotuneStrategy::ask(double elapsed) {
         updateArgGauss(bestDsubExponent_, 1, 4, 2.0, 1.0, t, true, rng_);
     args.dsub = (1 << dsubExponent);
   }
-  if (!args.isManual("minn")) {
+  if (!args.isManual("minn") && !noBuckets) {
     int minnIndex = updateArgGauss(
         bestMinnIndex_,
         0,
@@ -164,7 +176,7 @@ Args AutotuneStrategy::ask(double elapsed) {
     args.minn = minnChoices_[minnIndex];
   }
   if (!args.isManual("maxn")) {
-    if (args.minn == 0) {
+    if (args.minn == 0 || noBuckets) {
       args.maxn = 0;
     } else {
       args.maxn = args.minn + 3;

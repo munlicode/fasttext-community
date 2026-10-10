@@ -48,7 +48,9 @@ class FastText {
   bool quant_;
   int32_t version;
   std::unique_ptr<DenseMatrix> wordVectors_;
-  std::exception_ptr trainException_;
+  std::exception_ptr trainException_; // written only by the thread whose
+                                      // stopTraining_.exchange() wins
+  std::atomic<bool> stopTraining_{false};
 
   void signModel(std::ostream&);
   bool checkModel(std::istream&);
