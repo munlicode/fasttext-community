@@ -31,6 +31,7 @@ def test_autotune_with_manual_bucket_zero(tmp_path):
     """Used to terminate: trials sampled n-grams that bucket=0 can't hold."""
     path = tmp_path / "train.txt"
     path.write_text("".join(f"__label__{line}\n" for line in get_random_data(3000)))
+    # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
     model = fasttext.train_supervised(
         str(path),
         autotuneValidationFile=str(path),
@@ -38,6 +39,7 @@ def test_autotune_with_manual_bucket_zero(tmp_path):
         bucket=0,
         minn=2,  # a manual minn must not turn on subwords either
         lr=0.1,  # a sampled lr can diverge (NaN) in the final retrain
+        thread=12,
         verbose=0,
     )
     args = model.f.getArgs()
