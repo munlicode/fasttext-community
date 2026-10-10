@@ -15,9 +15,8 @@ from fasttext.tests.helpers import get_random_data
 data = get_random_data(3000, max_vocab_size=600)
 with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
     f.write("".join(f"__label__{line}\\n" for line in data))
-# thread=12: thread <= 10 leaves the input matrix partly uninitialized.
 fasttext.train_supervised(
-    f.name, autotuneValidationFile=f.name, autotuneDuration=2, thread=12, verbose=0
+    f.name, autotuneValidationFile=f.name, autotuneDuration=2, verbose=0
 )
 
 def later(delay, func, *args):

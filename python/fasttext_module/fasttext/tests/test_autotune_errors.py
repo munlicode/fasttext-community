@@ -15,8 +15,6 @@ def test_autotune_error_raises(tmp_path):
     valid = tmp_path / "valid.txt"
     valid.write_text("".join(f"__label__{line}\n" for line in data))
     kwargs = {
-        # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
-        "thread": 12,
         "verbose": 0,
         "autotuneValidationFile": str(valid),
         "autotuneMetric": "f1:__label__missing",  # fails after the first trial
