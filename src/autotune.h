@@ -81,7 +81,7 @@ class Autotune {
   Autotune(Autotune&&) = delete;
   Autotune& operator=(const Autotune&) = delete;
   Autotune& operator=(Autotune&&) = delete;
-  ~Autotune() noexcept = default;
+  ~Autotune() noexcept;
 
   void train(const Args& args);
 };
