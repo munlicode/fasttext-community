@@ -8,7 +8,7 @@ name = "fasttext-community"
 version = "0.11.8"
 description = "fasttext Python bindings"
 readme = { file = "python/README.rst", content-type = "text/x-rst" }
-requires-python = ">=3.9, <3.15"
+requires-python = ">=3.9, <3.16"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -42,7 +42,7 @@ dev = ["build", "cibuildwheel>=4.0,<5", "pytest", "pytest-mock", "twine"]
 where = ["python/fasttext_module"]
 
 [tool.cibuildwheel]
-build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-* cp315-*"
 test-extras = ["test"]
 test-command = "pytest {project}"
 build-verbosity = 1
