@@ -76,7 +76,7 @@ For the word-similarity evaluation script you will need:
 
 For the python bindings (see the subdirectory python) you will need:
 
-* Python >=3.9, <3.15
+* Python >=3.9, <3.16
 * NumPy & SciPy
 * [pybind11](https://github.com/pybind/pybind11)
 
