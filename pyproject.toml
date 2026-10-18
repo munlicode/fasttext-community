@@ -36,7 +36,7 @@ Homepage = "https://github.com/munlicode/fasttext-community"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-mock"]
-dev = ["build", "cibuildwheel>=4.0,<5", "pytest", "pytest-mock", "twine"]
+dev = ["build", "cibuildwheel>=4.3.1,<5", "pytest", "pytest-mock", "twine"]
 
 [tool.setuptools.packages.find]
 where = ["python/fasttext_module"]
