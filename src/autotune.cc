@@ -307,9 +307,8 @@ void Autotune::timer(
     printInfo(maxDuration);
   }
   abort();
-  // FastText::train() clears its stop flag when it starts, so an abort that
-  // lands just before that is lost and the trial would run to completion.
-  // Keep re-sending it until train() has handed control back.
+  // train() clears its stop flag on entry, which can swallow the abort above.
+  // Re-send until the main thread is done with the trials.
   while (!timerDone_) {
     fastText_->abort();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -330,9 +329,8 @@ void Autotune::abort() {
 void Autotune::startTimer(const Args& args) {
   std::chrono::steady_clock::time_point start =
       std::chrono::steady_clock::now();
-  // Set all shared state before the thread exists: a timer that ran first
-  // would see continueTraining_ == false, exit at once and never abort, and
-  // the trial loop would then spin forever with elapsed_ stuck at 0.
+  // Set state before the thread starts: a timer seeing continueTraining_
+  // still false would exit without aborting, and the trial loop never ends.
   bestScore_ = kUnknownBestScore;
   trials_ = 0;
   elapsed_ = 0.0;
