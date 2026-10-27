@@ -48,6 +48,7 @@ class Autotune {
   int32_t trials_;
   int32_t sizeConstraintFailed_;
   std::atomic<bool> continueTraining_;
+  std::atomic<bool> timerDone_;
   std::unique_ptr<AutotuneStrategy> strategy_;
   std::thread timer_;
 

@@ -261,6 +261,7 @@ Autotune::Autotune(const std::shared_ptr<FastText>& fastText)
       trials_(0),
       sizeConstraintFailed_(0),
       continueTraining_(false),
+      timerDone_(false),
       strategy_(),
       timer_() {}
 
@@ -272,6 +273,7 @@ Autotune::~Autotune() noexcept {
   // joinable std::thread calls std::terminate().
   if (timer_.joinable()) {
     continueTraining_ = false;
+    timerDone_ = true;
     timer_.join();
   }
 }
@@ -299,13 +301,18 @@ void Autotune::printInfo(double maxDuration) {
 void Autotune::timer(
     const std::chrono::steady_clock::time_point& start,
     double maxDuration) {
-  elapsed_ = 0.0;
   while (keepTraining(maxDuration)) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     elapsed_ = utils::getDuration(start, std::chrono::steady_clock::now());
     printInfo(maxDuration);
   }
   abort();
+  // train() clears its stop flag on entry, which can swallow the abort above.
+  // Re-send until the main thread is done with the trials.
+  while (!timerDone_) {
+    fastText_->abort();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
 }
 
 bool Autotune::keepTraining(double maxDuration) const {
@@ -322,10 +329,13 @@ void Autotune::abort() {
 void Autotune::startTimer(const Args& args) {
   std::chrono::steady_clock::time_point start =
       std::chrono::steady_clock::now();
-  timer_ = std::thread([=]() { timer(start, args.autotuneDuration); });
+  // Set state before the thread starts: a timer seeing continueTraining_
+  // still false would exit without aborting, and the trial loop never ends.
   bestScore_ = kUnknownBestScore;
   trials_ = 0;
+  elapsed_ = 0.0;
   continueTraining_ = true;
+  timerDone_ = false;
 
   interruptSignalHandler = [this]() {
     restoreSigint();
@@ -333,6 +343,7 @@ void Autotune::startTimer(const Args& args) {
     abort();
   };
   installSigint();
+  timer_ = std::thread([=]() { timer(start, args.autotuneDuration); });
 }
 
 double Autotune::getMetricScore(
@@ -508,6 +519,7 @@ void Autotune::train(const Args& autotuneArgs) {
     LOG_VAL_NAN(currentScore, currentScore)
     LOG_VAL(train took, elapsedTimeMarker.getElapsed())
   }
+  timerDone_ = true;
   if (timer_.joinable()) {
     timer_.join();
   }
