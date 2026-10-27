@@ -1,13 +1,28 @@
-# fastText [![CircleCI](https://circleci.com/gh/facebookresearch/fastText/tree/master.svg?style=svg)](https://circleci.com/gh/facebookresearch/fastText/tree/master)
+# Python binding for fasttext-community
+
+> [!NOTE]
+> Unofficial Community-Maintained Fork
+>
+> **This is a fork of the original [fastText](https://github.com/facebookresearch/fastText) repository, which was archived by Meta on March 19, 2024.**
+>
+> The purpose of this fork is to provide ongoing maintenance, bug fixes,
+> and compatibility updates for the community.
+> It is not affiliated with Meta or the original authors.
+>
+> The Python binding for fasttext-community is available from PyPI:
+> <https://pypi.org/project/fasttext-community/>.
+> To install it, run:
+>
+> ```bash
+> pip install fasttext-community
+> ```
 
 [fastText](https://fasttext.cc/) is a library for efficient learning of word representations and sentence classification.
 
-In this document we present how to use fastText in python.
+In this document we present how to use fastText (fasttext-community) in Python.
 
 ## Table of contents
 
-- [fastText ](#fasttext-)
-  - [Table of contents](#table-of-contents)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage overview](#usage-overview)
@@ -21,38 +36,38 @@ In this document we present how to use fastText in python.
   - [`train_unsupervised` parameters](#train_unsupervised-parameters)
   - [`train_supervised` parameters](#train_supervised-parameters)
   - [`model` object](#model-object)
-  - [Join the fastText community](#join-the-fasttext-community)
+- [Join the fastText community](#join-the-fasttext-community)
 
+## Requirements
 
-# Requirements
+[fastText](https://fasttext.cc/) builds on modern macOS and Linux distributions.
+Since it uses C\++11 features, it requires a compiler with good C++11 support.
+You will need [Python](https://www.python.org/) (version >=3.9, <3.16), [NumPy](http://www.numpy.org/) & [SciPy](https://www.scipy.org/) and [pybind11](https://github.com/pybind/pybind11).
 
-[fastText](https://fasttext.cc/) builds on modern Mac OS and Linux distributions.
-Since it uses C\++11 features, it requires a compiler with good C++11 support. You will need [Python](https://www.python.org/) (version >=3.9, <3.15), [NumPy](http://www.numpy.org/) & [SciPy](https://www.scipy.org/) and [pybind11](https://github.com/pybind/pybind11).
-
-
-# Installation
+## Installation
 
 To install the latest release, you can do :
+
 ```bash
-$ pip install fasttext-community
+pip install fasttext-community
 ```
 
-or, to get the latest development version of fasttext, you can install from our github repository :
+or, to get the latest development version of fasttext-community,
+you can install from our GitHub repository :
+
 ```bash
-$ git clone https://github.com/munlicode/fasttext-community.git
-$ cd fastText
-$ sudo pip install .
-$ # or :
-$ sudo python setup.py install
+git clone https://github.com/munlicode/fasttext-community.git
+cd fastText
+sudo pip install .
+# or :
+sudo python setup.py install
 ```
 
-# Usage overview
+## Usage overview
 
-
-## Word representation model
+### Word representation model
 
 In order to learn word vectors, as [described here](https://fasttext.cc/docs/en/references.html#enriching-word-vectors-with-subword-information), we can use `fasttext.train_unsupervised` function like this:
-
 
 ```py
 import fasttext
@@ -67,7 +82,6 @@ model = fasttext.train_unsupervised('data.txt', model='cbow')
 
 where `data.txt` is a training file containing utf-8 encoded text.
 
-
 The returned `model` object represents your learned model, and you can use it to retrieve information.
 
 ```py
@@ -75,26 +89,25 @@ print(model.words)   # list of words in dictionary
 print(model['king']) # get the vector of the word 'king'
 ```
 
-
-### Saving and loading a model object
+#### Saving and loading a model object
 
 You can save your trained model object by calling the function `save_model`.
+
 ```py
 model.save_model("model_filename.bin")
 ```
 
 and retrieve it later thanks to the function `load_model` :
+
 ```py
 model = fasttext.load_model("model_filename.bin")
 ```
 
 For more information about word representation usage of fasttext, you can refer to our [word representations tutorial](https://fasttext.cc/docs/en/unsupervised-tutorial.html).
 
-
-## Text classification model
+### Text classification model
 
 In order to train a text classifier using the method [described here](https://fasttext.cc/docs/en/references.html#bag-of-tricks-for-efficient-text-classification), we can use `fasttext.train_supervised` function like this:
-
 
 ```py
 import fasttext
@@ -129,6 +142,7 @@ model.predict("Which baking dish is best to bake a banana bread ?")
 ```
 
 By default, `predict` returns only one label : the one with the highest probability. You can also predict more than one label by specifying the parameter `k`:
+
 ```py
 model.predict("Which baking dish is best to bake a banana bread ?", k=3)
 ```
@@ -139,15 +153,11 @@ If you want to predict more than one sentence you can pass an array of strings :
 model.predict(["Which baking dish is best to bake a banana bread ?", "Why not put knives in the dishwasher?"], k=3)
 ```
 
-
 Of course, you can also save and load a model to/from a file as [in the word representation usage](#saving-and-loading-a-model-object).
 
 For more information about text classification usage of fasttext, you can refer to our [text classification tutorial](https://fasttext.cc/docs/en/supervised-tutorial.html).
 
-
-
-
-### Compress model files with quantization
+#### Compress model files with quantization
 
 When you want to save a supervised model file, fastText can compress it in order to have a much smaller model file by sacrificing only a little bit performance.
 
@@ -164,27 +174,26 @@ model.save_model("model_filename.ftz")
 
 For further reading on quantization, you can refer to [this paragraph from our blog post](https://fasttext.cc/blog/2017/10/02/blog-post.html#model-compression).
 
-
-## IMPORTANT: Preprocessing data / encoding conventions
+### IMPORTANT: Preprocessing data / encoding conventions
 
 In general it is important to properly preprocess your data. In particular our example scripts in the [root folder](https://github.com/facebookresearch/fastText) do this.
 
 fastText assumes UTF-8 encoded text. All text must be [unicode for Python2](https://docs.python.org/2/library/functions.html#unicode) and [str for Python3](https://docs.python.org/3.5/library/stdtypes.html#textseq). The passed text will be [encoded as UTF-8 by pybind11](https://pybind11.readthedocs.io/en/master/advanced/cast/strings.html?highlight=utf-8#strings-bytes-and-unicode-conversions) before passed to the fastText C++ library. This means it is important to use UTF-8 encoded text when building a model. On Unix-like systems you can convert text using [iconv](https://en.wikipedia.org/wiki/Iconv).
 
-fastText will tokenize (split text into pieces) based on the following ASCII characters (bytes). In particular, it is not aware of UTF-8 whitespace. We advice the user to convert UTF-8 whitespace / word boundaries into one of the following symbols as appropiate.
+fastText will tokenize (split text into pieces) based on the following ASCII characters (bytes). In particular, it is not aware of UTF-8 whitespace. We advice the user to convert UTF-8 whitespace / word boundaries into one of the following symbols as appropriate.
 
-* space
-* tab
-* vertical tab
-* carriage return
-* formfeed
-* the null character
+- space
+- tab
+- vertical tab
+- carriage return
+- formfeed
+- the null character
 
 The newline character is used to delimit lines of text. In particular, the EOS token is appended to a line of text if a newline character is encountered. The only exception is if the number of tokens exceeds the MAX\_LINE\_SIZE constant as defined in the [Dictionary header](https://github.com/facebookresearch/fastText/blob/master/src/dictionary.h). This means if you have text that is not separate by newlines, such as the [fil9 dataset](http://mattmahoney.net/dc/textdata), it will be broken into chunks with MAX\_LINE\_SIZE of tokens and the EOS token is not appended.
 
 The length of a token is the number of UTF-8 characters by considering the [leading two bits of a byte](https://en.wikipedia.org/wiki/UTF-8#Description) to identify [subsequent bytes of a multi-byte sequence](https://github.com/facebookresearch/fastText/blob/master/src/dictionary.cc). Knowing this is especially important when choosing the minimum and maximum length of subwords. Further, the EOS token (as specified in the [Dictionary header](https://github.com/facebookresearch/fastText/blob/master/src/dictionary.h)) is considered a character and will not be broken into subwords.
 
-## More examples
+### More examples
 
 In order to have a better knowledge of fastText models, please consider the main [README](https://github.com/facebookresearch/fastText/blob/master/README.md) and in particular [the tutorials on our website](https://fasttext.cc/docs/en/supervised-tutorial.html).
 
@@ -219,11 +228,9 @@ FUNCTIONS
 [...]
 ```
 
+## API
 
-# API
-
-
-## `train_unsupervised` parameters
+### `train_unsupervised` parameters
 
 ```python
     input             # training file path (required)
@@ -245,7 +252,7 @@ FUNCTIONS
     verbose           # verbose [2]
 ```
 
-## `train_supervised` parameters
+### `train_supervised` parameters
 
 ```python
     input             # training file path (required)
@@ -269,7 +276,7 @@ FUNCTIONS
     pretrainedVectors # pretrained word vectors (.vec file) for supervised learning []
 ```
 
-## `model` object
+### `model` object
 
 `train_supervised`, `train_unsupervised` and `load_model` functions return an instance of `_FastText` class, that we generaly name `model` object.
 
@@ -286,12 +293,12 @@ In addition, the object exposes several functions :
                             # This is equivalent to `labels` property.
     get_line                # Split a line of text into words and labels.
     get_output_matrix       # Get a copy of the full output matrix of a Model.
-    get_sentence_vector     # Given a string, get a single vector represenation. This function
+    get_sentence_vector     # Given a string, get a single vector representation. This function
                             # assumes to be given a single line of text. We split words on
                             # whitespace (space, newline, tab, vertical tab) and the control
                             # characters carriage return, formfeed and the null character.
     get_subword_id          # Given a subword, return the index (within input matrix) it hashes to.
-    get_subwords            # Given a word, get the subwords and their indicies.
+    get_subwords            # Given a word, get the subwords and their indices.
     get_word_id             # Given a word, get the word id within the dictionary.
     get_word_vector         # Get the vector representation of word.
     get_words               # Get the entire list of words of the dictionary
@@ -305,6 +312,7 @@ In addition, the object exposes several functions :
 ```
 
 The properties `words`, `labels` return the words and labels from the dictionary :
+
 ```py
 model.words         # equivalent to model.get_words()
 model.labels        # equivalent to model.get_labels()
@@ -317,9 +325,7 @@ model['king']       # equivalent to model.get_word_vector('king')
 'king' in model     # equivalent to `'king' in model.get_words()`
 ```
 
-
-Join the fastText community
----------------------------
+## Join the fastText community
 
 - [Facebook page](https://www.facebook.com/groups/1174547215919768)
 - [Stack overflow](https://stackoverflow.com/questions/tagged/fasttext)
