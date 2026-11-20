@@ -58,7 +58,7 @@ We also provide a [cheatsheet](https://fasttext.cc/docs/en/cheatsheet.html#conte
 
 We are continuously building and testing our library, CLI and Python bindings under various docker images using [circleci](https://circleci.com/).
 
-Generally, **fastText** builds on modern Mac OS and Linux distributions.
+Generally, **fastText** builds on modern macOS and Linux distributions.
 Since it uses some C++11 features, it requires a compiler with good C++11 support.
 These include :
 
@@ -97,9 +97,9 @@ There is also the master branch that contains all of our most recent work, but c
 ### Building fastText using make (preferred)
 
 ```shell
-wget https://github.com/munlicode/fasttext-community/archive/refs/tags/v0.11.8.zip
-unzip v0.11.8.zip
-cd fasttext-community-0.11.8
+wget https://github.com/munlicode/fasttext-community/archive/refs/tags/v0.11.9.zip
+unzip v0.11.9.zip
+cd fasttext-community-0.11.9
 make
 ```
 
