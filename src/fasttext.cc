@@ -401,6 +401,10 @@ namespace fasttext
     }
     // Check sizes before changing anything: failing later leaves a
     // half-quantized model (pruned dict, or quantized input only).
+    if (qargs.retrain)
+    {
+      checkThreadCount(qargs.thread);
+    }
     const int64_t minRows = 256; // ProductQuantizer::ksub_
     int64_t inputRows = input_->size(0);
     if (qargs.cutoff > 0 && qargs.cutoff < static_cast<size_t>(inputRows))
@@ -917,6 +921,7 @@ namespace fasttext
 
   void FastText::train(const Args &args, const TrainCallback &callback)
   {
+    checkThreadCount(args.thread);
     if (args.bucket <= 0 && (args.maxn > 0 || args.wordNgrams > 1))
     {
       throw std::invalid_argument(
@@ -956,6 +961,16 @@ namespace fasttext
     startThreads(callback);
   }
 
+  void FastText::checkThreadCount(int32_t thread)
+  {
+    // 0 divides by zero in trainThread
+    if (thread < 1)
+    {
+      throw std::invalid_argument(
+          "thread must be >= 1, got " + std::to_string(thread));
+    }
+  }
+
   void FastText::abort()
   {
     // Called from other threads (autotune timer, SIGINT): only set the flag.
@@ -972,10 +987,23 @@ namespace fasttext
     std::vector<std::thread> threads;
     if (args_->thread > 1)
     {
-      for (int32_t i = 0; i < args_->thread; i++)
+      try
       {
-        threads.push_back(std::thread([=]()
-                                      { trainThread(i, callback); }));
+        for (int32_t i = 0; i < args_->thread; i++)
+        {
+          threads.push_back(std::thread([=]()
+                                        { trainThread(i, callback); }));
+        }
+      }
+      catch (...)
+      {
+        // Spawn failed: join running threads, else ~thread() terminates
+        stopTraining_ = true;
+        for (auto &t : threads)
+        {
+          t.join();
+        }
+        throw;
       }
     }
     else

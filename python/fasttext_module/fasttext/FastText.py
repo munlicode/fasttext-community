@@ -467,7 +467,8 @@ unsupervised_default = {
     "wordNgrams": 1,
     "loss": "ns",
     "bucket": 2000000,
-    "thread": multiprocessing.cpu_count() - 1,
+    # cpu_count() - 1 is 0 on a single CPU
+    "thread": max(1, multiprocessing.cpu_count() - 1),
     "lrUpdateRate": 100,
     "t": 1e-4,
     "label": "__label__",
