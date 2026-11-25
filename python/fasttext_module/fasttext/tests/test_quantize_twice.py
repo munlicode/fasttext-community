@@ -6,6 +6,7 @@
 """quantize() must raise on a quantized model, and leave the model unchanged
 when it fails."""
 
+import numpy as np
 import pytest
 
 import fasttext
@@ -50,6 +51,22 @@ def test_failed_quantize_leaves_model_unchanged(tmp_path, kwargs):
     assert not model.is_quantized()
     assert len(model.get_words()) == nwords
     model.quantize()
+
+
+def test_failed_retrain_leaves_model_unchanged(tmp_path):
+    """Used to keep the pruned dict, half-trained output and retrain lr."""
+    data = get_random_data(3000, max_vocab_size=600)
+    model = build_supervised_model(data, {"thread": 12, "dim": 16, "verbose": 0})
+    path = tmp_path / "train.txt"
+    path.write_text("".join(f"__label__{line}\n" for line in data))
+    words, output = model.get_words(), model.get_output_matrix().copy()
+    lr, pred = model.f.getArgs().lr, model.predict(data[0])
+    with pytest.raises(RuntimeError, match="NaN"):
+        model.quantize(input=str(path), cutoff=300, retrain=True, lr=1e30)
+    assert model.get_words() == words and model.f.getArgs().lr == lr
+    assert np.array_equal(model.get_output_matrix(), output)
+    assert model.predict(data[0]) == pred
+    model.quantize(input=str(path), cutoff=300, retrain=True)
 
 
 def test_set_matrices_clears_quantized():

@@ -417,6 +417,7 @@ namespace fasttext
           "Matrix too small for quantization, must have at least " +
           std::to_string(minRows) + " rows");
     }
+    const Args savedArgs = *args_; // restored if retraining throws
     args_->input = qargs.input;
     args_->qout = qargs.qout;
     args_->output = qargs.output;
@@ -433,6 +434,11 @@ namespace fasttext
     if (qargs.cutoff > 0 && static_cast<size_t>(qargs.cutoff) < static_cast<size_t>(input->size(0)))
     {
       auto idx = selectEmbeddings(qargs.cutoff);
+      const auto savedDict = dict_;
+      if (qargs.retrain)
+      {
+        dict_ = std::make_shared<Dictionary>(*dict_);
+      }
       dict_->prune(idx);
       std::shared_ptr<DenseMatrix> ninput =
           std::make_shared<DenseMatrix>(idx.size(), args_->dim);
@@ -450,9 +456,26 @@ namespace fasttext
         args_->lr = qargs.lr;
         args_->thread = qargs.thread;
         args_->verbose = qargs.verbose;
+        // Train a copy of output: if training fails (NaN, abort), restore all
+        const auto savedOutput = output_;
+        const auto savedModel = model_;
+        output = std::make_shared<DenseMatrix>(
+            output->size(0), output->size(1), output->data());
+        output_ = output;
         auto loss = createLoss(output_);
         model_ = std::make_shared<Model>(input, output, loss, normalizeGradient);
-        startThreads(callback);
+        try
+        {
+          startThreads(callback);
+        }
+        catch (...)
+        {
+          *args_ = savedArgs;
+          dict_ = savedDict;
+          output_ = savedOutput;
+          model_ = savedModel;
+          throw;
+        }
       }
     }
     input_ = std::make_shared<QuantMatrix>(
