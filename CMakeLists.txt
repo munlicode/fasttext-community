@@ -6,16 +6,11 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-cmake_minimum_required(VERSION 2.8.9)
-project(fasttext)
+cmake_minimum_required(VERSION 3.10)
+# The version number. Keep pyproject.toml in sync with this.
+project(fasttext VERSION 0.11.9)
 
 set(CMAKE_CXX_STANDARD 17)
-
-# The version number.
-set (fasttext_VERSION_MAJOR 0)
-set (fasttext_VERSION_MINOR 1)
-
-include_directories(fasttext)
 
 if(WIN32)
     set(CMAKE_CXX_FLAGS " -std=c++17 -funroll-loops -O3")
@@ -24,6 +19,7 @@ else()
 endif()
 
 set(HEADER_FILES
+    src/aligned.h
     src/args.h
     src/autotune.h
     src/densematrix.h
