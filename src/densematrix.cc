@@ -66,17 +66,29 @@ namespace fasttext
     {
       unsigned int numWorkers = std::min(thread, numBlocks);
       std::vector<std::thread> threads;
-      for (unsigned int i = 0; i < numWorkers; i++)
+      try
       {
-        // Worker i fills blocks i, i + numWorkers, i + 2 * numWorkers, ...
-        auto work = [=]()
+        for (unsigned int i = 0; i < numWorkers; i++)
         {
-          for (unsigned int b = i; b < numBlocks; b += numWorkers)
+          // Worker i fills blocks i, i + numWorkers, i + 2 * numWorkers, ...
+          auto work = [=]()
           {
-            uniformThread(a, b, seed);
-          }
-        };
-        threads.push_back(std::thread(work));
+            for (unsigned int b = i; b < numBlocks; b += numWorkers)
+            {
+              uniformThread(a, b, seed);
+            }
+          };
+          threads.push_back(std::thread(work));
+        }
+      }
+      catch (...)
+      {
+        // Spawn failed: join running threads, else ~thread() terminates
+        for (auto &t : threads)
+        {
+          t.join();
+        }
+        throw;
       }
       for (size_t i = 0; i < threads.size(); i++)
       {

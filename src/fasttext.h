@@ -55,6 +55,7 @@ class FastText {
   void signModel(std::ostream&);
   bool checkModel(std::istream&);
   void startThreads(const TrainCallback& callback = {});
+  static void checkThreadCount(int32_t thread);
   void addInputVector(Vector&, int32_t) const;
   void trainThread(int32_t, const TrainCallback& callback);
   std::vector<std::pair<real, std::string>> getNN(
