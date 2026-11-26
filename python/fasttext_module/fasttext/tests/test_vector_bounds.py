@@ -13,7 +13,7 @@ from .helpers import build_supervised_model, get_random_data
 
 
 def _model(data=None):
-    # thread=12: thread <= 10 leaves the input matrix partly uninitialized.
+    # thread=12: multi-threaded, and the same on every machine.
     data = data or get_random_data(300, max_vocab_size=100)
     return build_supervised_model(data, {"thread": 12, "dim": 16, "verbose": 0})
 
@@ -51,4 +51,5 @@ def test_training_thread_error_raises(tmp_path):
     train_txt = tmp_path / "train.txt"
     train_txt.write_text("".join(f"__label__{line}\n" for line in data))
     with pytest.raises(ValueError, match="size mismatch"):
-        model.quantize(input=str(train_txt), cutoff=300, retrain=True)
+        # thread > 1: the error must cross a std::thread (1 trains inline)
+        model.quantize(input=str(train_txt), cutoff=300, retrain=True, thread=2)

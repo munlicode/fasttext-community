@@ -143,13 +143,8 @@ def test_supervised_util_test(kwargs):
             valid_file.write(f"__label__{line.strip()}\n")
         valid_file.close()
 
-        # 3. Train the model on the training data, NOW WITH NaN HANDLING
-        try:
-            model = train_supervised(input=train_path, **kwargs)
-        except RuntimeError as e:
-            if "Encountered NaN" in str(e):
-                pytest.skip(f"fastText training diverged (NaN) with kwargs={kwargs}")
-            raise  # Re-raise any other runtime errors
+        # 3. Train the model on the training data
+        model = train_supervised(input=train_path, **kwargs)
 
         # 4. Manually get predictions and true labels from the validation file
         true_labels = []

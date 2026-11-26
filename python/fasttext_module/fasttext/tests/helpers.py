@@ -1,7 +1,6 @@
 from fasttext import train_supervised
 from fasttext import train_unsupervised
 import tempfile
-import pytest
 import random
 import string
 
@@ -106,41 +105,25 @@ def default_kwargs(kwargs):
 
 
 def build_unsupervised_model(data, kwargs):
-    """Builds an unsupervised model, skipping the test on NaN errors."""
     kwargs = default_kwargs(kwargs)
 
     with tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8", delete=False) as tmpf:
         for line in data:
             tmpf.write(line + "\n")
         tmpf.flush()
-        try:
-            model = train_unsupervised(input=tmpf.name, **kwargs)
-        except RuntimeError as e:
-            if "Encountered NaN" in str(e):
-                # This is an expected instability. Instead of failing, we skip.
-                pytest.skip(f"fastText training diverged (NaN) with kwargs={kwargs}")
-            raise  # Re-raise any other runtime errors
+        model = train_unsupervised(input=tmpf.name, **kwargs)
     return model
 
 
 def build_supervised_model(data, kwargs):
-    """Builds a supervised model, skipping the test on NaN errors."""
     kwargs = default_kwargs(kwargs)
 
     with tempfile.NamedTemporaryFile(mode="w+", encoding="UTF-8", delete=False) as tmpf:
         for line in data:
-            # This labeling scheme (using the whole line as a label)
-            # is a primary cause of the instability.
             line = f"__label__{line.strip()}\n"
             tmpf.write(line)
         tmpf.flush()
-        try:
-            model = train_supervised(input=tmpf.name, **kwargs)
-        except RuntimeError as e:
-            if "Encountered NaN" in str(e):
-                # This is an expected instability. Instead of failing, we skip.
-                pytest.skip(f"fastText training diverged (NaN) with kwargs={kwargs}")
-            raise  # Re-raise any other runtime errors
+        model = train_supervised(input=tmpf.name, **kwargs)
     return model
 
 
