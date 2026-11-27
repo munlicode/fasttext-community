@@ -104,6 +104,20 @@ void printPrintNgramsUsage()
             << std::endl;
 }
 
+void parseArgs(Args &a, const std::vector<std::string> &args)
+{
+  try
+  {
+    a.parseArgs(args);
+  }
+  catch (const std::invalid_argument &e)
+  {
+    std::cerr << e.what() << std::endl;
+    a.printHelp();
+    exit(EXIT_FAILURE);
+  }
+}
+
 void quantize(const std::vector<std::string> &args)
 {
   Args a = Args();
@@ -113,7 +127,7 @@ void quantize(const std::vector<std::string> &args)
     a.printHelp();
     exit(EXIT_FAILURE);
   }
-  a.parseArgs(args);
+  parseArgs(a, args);
   FastText fasttext;
   // parseArgs checks if a->output is given.
   fasttext.loadModel(a.output + ".bin");
@@ -420,7 +434,7 @@ void analogies(const std::vector<std::string> args)
 void train(const std::vector<std::string> args)
 {
   Args a = Args();
-  a.parseArgs(args);
+  parseArgs(a, args);
   std::shared_ptr<FastText> fasttext = std::make_shared<FastText>();
   std::string outputFileName;
 
