@@ -42,7 +42,6 @@ set(SOURCE_FILES
     src/dictionary.cc
     src/fasttext.cc
     src/loss.cc
-    src/main.cc
     src/matrix.cc
     src/meter.cc
     src/model.cc
