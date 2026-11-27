@@ -120,17 +120,13 @@ void Args::parseArgs(const std::vector<std::string>& args) {
   }
   for (size_t ai = 2; ai < args.size(); ai += 2) {
     if (args[ai][0] != '-') {
-      std::cerr << "Provided argument without a dash! Usage:" << std::endl;
-      printHelp();
-      exit(EXIT_FAILURE);
+      throw std::invalid_argument("Provided argument without a dash! Usage:");
     }
     try {
       setManual(args[ai].substr(1));
 
       if (args[ai] == "-h") {
-        std::cerr << "Here is the help! Usage:" << std::endl;
-        printHelp();
-        exit(EXIT_FAILURE);
+        throw std::invalid_argument("Here is the help! Usage:");
       } else if (args[ai] == "-input") {
         input = std::string(args.at(ai + 1));
       } else if (args[ai] == "-output") {
@@ -164,9 +160,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
             args.at(ai + 1) == "one-vs-all" || args.at(ai + 1) == "ova") {
           loss = loss_name::ova;
         } else {
-          std::cerr << "Unknown loss: " << args.at(ai + 1) << std::endl;
-          printHelp();
-          exit(EXIT_FAILURE);
+          throw std::invalid_argument("Unknown loss: " + args.at(ai + 1));
         }
       } else if (args[ai] == "-bucket") {
         bucket = std::stoi(args.at(ai + 1));
@@ -215,25 +209,18 @@ void Args::parseArgs(const std::vector<std::string>& args) {
       } else if (args[ai] == "-autotune-modelsize") {
         autotuneModelSize = std::string(args.at(ai + 1));
       } else {
-        std::cerr << "Unknown argument: " << args[ai] << std::endl;
-        printHelp();
-        exit(EXIT_FAILURE);
+        throw std::invalid_argument("Unknown argument: " + args[ai]);
       }
     } catch (const std::out_of_range& e) {
-      std::cerr << args[ai] << " is missing an argument" << std::endl;
-      printHelp();
-      exit(EXIT_FAILURE);
+      throw std::invalid_argument(args[ai] + " is missing an argument");
     }
   }
   if (input.empty() || output.empty()) {
-    std::cerr << "Empty input or output path." << std::endl;
-    printHelp();
-    exit(EXIT_FAILURE);
+    throw std::invalid_argument("Empty input or output path.");
   }
   if (thread < 1) {
-    std::cerr << "-thread must be >= 1, got " << thread << std::endl;
-    printHelp();
-    exit(EXIT_FAILURE);
+    throw std::invalid_argument(
+        "-thread must be >= 1, got " + std::to_string(thread));
   }
   if (wordNgrams <= 1 && maxn == 0 && !hasAutotune()) {
     bucket = 0;

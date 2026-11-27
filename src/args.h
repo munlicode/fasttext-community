@@ -73,6 +73,7 @@ class Args {
   int autotuneDuration;
   std::string autotuneModelSize;
 
+  // Throws std::invalid_argument on bad arguments
   void parseArgs(const std::vector<std::string>& args);
   void printHelp();
   void printBasicHelp();
