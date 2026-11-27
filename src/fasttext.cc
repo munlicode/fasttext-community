@@ -434,10 +434,10 @@ namespace fasttext
     if (qargs.cutoff > 0 && static_cast<size_t>(qargs.cutoff) < static_cast<size_t>(input->size(0)))
     {
       auto idx = selectEmbeddings(qargs.cutoff);
-      const auto savedDict = dict_;
+      std::stringstream savedDict; // restored if retraining throws
       if (qargs.retrain)
       {
-        dict_ = std::make_shared<Dictionary>(*dict_);
+        dict_->save(savedDict);
       }
       dict_->prune(idx);
       std::shared_ptr<DenseMatrix> ninput =
@@ -471,7 +471,7 @@ namespace fasttext
         catch (...)
         {
           *args_ = savedArgs;
-          dict_ = savedDict;
+          dict_->load(savedDict);
           output_ = savedOutput;
           model_ = savedModel;
           throw;
